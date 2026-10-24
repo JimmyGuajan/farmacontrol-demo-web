@@ -1,0 +1,896 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FarmaControl</title>
+<style>
+:root{--bg:#f3f5f9;--surface:#fff;--ink:#0f1b2d;--ink2:#334155;--muted:#64748b;--line:#e4e8ef;--brand:#059669;--brand-d:#047857;--brand-l:#d1fae5;--navy:#0b1f33;--navy2:#13304d;--ok:#15803d;--ok-l:#dcfce7;--warn:#b45309;--warn-l:#fef3c7;--bad:#b91c1c;--bad-l:#fee2e2;--info:#1d4ed8;--info-l:#dbeafe;--qx:#059669;--ho:#6366f1;--em:#f97316;--r:12px;--shadow:0 1px 2px rgba(15,27,45,.05),0 6px 20px rgba(15,27,45,.06)}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:"Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit;color:inherit}
+.app{display:grid;grid-template-columns:252px 1fr;min-height:100vh}
+/* sidebar */
+.side{background:linear-gradient(180deg,var(--navy) 0%,#0a2a40 100%);color:#cbd5e1;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;padding:20px 14px}
+.logo{display:flex;align-items:center;gap:11px;padding:4px 10px 22px}
+.logo .mark{width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,#34d399,#059669);display:grid;place-items:center;color:#fff;box-shadow:0 4px 14px rgba(52,211,153,.35)}
+.logo b{display:block;color:#fff;font-size:17px;letter-spacing:.2px;line-height:1.1}
+.logo small{color:#7da2b8;font-size:11.5px}
+.nav{display:flex;flex-direction:column;gap:3px}
+.nav-l{font-size:10.5px;text-transform:uppercase;letter-spacing:1.2px;color:#6d8da3;padding:14px 12px 6px}
+.nav button{display:flex;align-items:center;gap:12px;background:none;border:0;color:#b6c6d4;padding:10px 12px;border-radius:9px;cursor:pointer;text-align:left;font-weight:500;position:relative}
+.nav button:hover{background:rgba(255,255,255,.06);color:#fff}
+.nav button.on{background:rgba(52,211,153,.16);color:#fff}
+.nav button.on::before{content:"";position:absolute;left:-14px;top:9px;bottom:9px;width:3px;border-radius:0 3px 3px 0;background:#34d399}
+.nav .badge{margin-left:auto;background:#ef4444;color:#fff;font-size:11px;font-weight:700;border-radius:20px;padding:1px 7px}
+.side-foot{margin-top:auto;padding:14px 10px 0;border-top:1px solid rgba(255,255,255,.08);font-size:12px;color:#7da2b8}
+.side-foot .u{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.av{width:34px;height:34px;border-radius:50%;background:#1e4a68;color:#fff;display:grid;place-items:center;font-weight:700;font-size:13px}
+.side-foot b{color:#e2e8f0;display:block;font-size:13px}
+.link-btn{background:none;border:0;color:#7da2b8;cursor:pointer;padding:0;text-decoration:underline;font-size:12px}
+.link-btn:hover{color:#fff}
+/* main */
+.main-wrap{min-width:0}
+.top{display:flex;align-items:center;gap:14px;padding:16px 32px;background:rgba(255,255,255,.85);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+.top h1{margin:0;font-size:20px;font-weight:700;letter-spacing:-.2px}
+.top .sub{color:var(--muted);font-size:12.5px}
+.top .sp{flex:1}
+.demo-tag{background:var(--warn-l);color:var(--warn);font-weight:700;font-size:11px;letter-spacing:.8px;padding:5px 10px;border-radius:20px}
+.main{padding:26px 32px 48px;max-width:1500px}
+/* cards */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+.card-h{display:flex;align-items:center;gap:10px;padding:16px 20px 0}
+.card-h h3{margin:0;font-size:15px;font-weight:650}
+.card-h .hint{color:var(--muted);font-size:12.5px}
+.card-b{padding:16px 20px 20px}
+.grid{display:grid;gap:18px}
+.g4{grid-template-columns:repeat(4,1fr)}
+.g5{grid-template-columns:repeat(5,1fr)}
+.g2{grid-template-columns:1.6fr 1fr}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g21{grid-template-columns:1fr 1fr}
+.kpi{padding:18px 20px;display:flex;gap:14px;align-items:flex-start}
+.kpi .ic{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;flex:none}
+.kpi .l{color:var(--muted);font-size:12.5px;font-weight:500}
+.kpi .v{font-size:25px;font-weight:700;letter-spacing:-.5px;line-height:1.2;margin-top:2px}
+.kpi .d{font-size:12px;color:var(--muted);margin-top:2px}
+.c-brand{background:var(--brand-l);color:var(--brand)}.c-info{background:var(--info-l);color:var(--info)}.c-warn{background:var(--warn-l);color:var(--warn)}.c-bad{background:var(--bad-l);color:var(--bad)}.c-ok{background:var(--ok-l);color:var(--ok)}
+/* buttons */
+.btn{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 14px;cursor:pointer;font-weight:600;font-size:13px;white-space:nowrap}
+.btn:hover{background:#f8fafc;border-color:#cbd5e1}
+.btn.pri{background:var(--brand);border-color:var(--brand);color:#fff;box-shadow:0 2px 8px rgba(5,150,105,.3)}
+.btn.pri:hover{background:var(--brand-d)}
+.btn.sm{padding:5px 10px;font-size:12px;border-radius:7px}
+.btn.danger{color:var(--bad);border-color:#fecaca}.btn.danger:hover{background:var(--bad-l)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+/* toolbar & inputs */
+.tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:16px}
+.tools .sp{flex:1}
+.inp,.sel{border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 12px;min-width:0;outline:none}
+.inp:focus,.sel:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(5,150,105,.15)}
+.search{position:relative}
+.search svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--muted)}
+.search .inp{padding-left:36px;width:300px}
+/* table */
+.tbl-wrap{overflow:auto}
+table{width:100%;border-collapse:collapse}
+th{font-size:11.5px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);font-weight:650;text-align:left;padding:11px 14px;background:#f8fafc;border-bottom:1px solid var(--line);white-space:nowrap;position:sticky;top:0}
+td{padding:11px 14px;border-bottom:1px solid #eef1f6;vertical-align:middle}
+tr:last-child td{border-bottom:0}
+tbody tr:hover td{background:#fafcfe}
+.r{text-align:right}.c{text-align:center}
+.mono{font-family:Consolas,"Cascadia Mono",monospace;font-size:12.5px;color:var(--ink2)}
+.pn b{font-weight:600;display:block}.pn span{color:var(--muted);font-size:12px}
+.muted{color:var(--muted)}
+.tag{display:inline-flex;align-items:center;gap:5px;border-radius:20px;padding:2px 10px;font-size:11.5px;font-weight:650;white-space:nowrap}
+.t-ok{background:var(--ok-l);color:var(--ok)}.t-warn{background:var(--warn-l);color:var(--warn)}.t-bad{background:var(--bad-l);color:var(--bad)}.t-info{background:var(--info-l);color:var(--info)}.t-mut{background:#eef2f7;color:var(--muted)}
+.tag.dot::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.ctrl{background:#ede9fe;color:#6d28d9;font-size:10.5px;font-weight:700;padding:1px 7px;border-radius:5px;margin-left:6px;vertical-align:middle}
+.bar{height:6px;background:#e9eef5;border-radius:6px;overflow:hidden;min-width:70px;margin-top:5px}
+.bar i{display:block;height:100%;border-radius:6px}
+.pos{color:var(--ok);font-weight:650}.neg{color:var(--bad);font-weight:650}
+.empty{padding:40px;text-align:center;color:var(--muted)}
+/* tabs */
+.tabs{display:flex;gap:6px;background:#e9eef5;padding:4px;border-radius:11px;width:max-content;max-width:100%;overflow:auto}
+.tabs button{border:0;background:none;padding:8px 16px;border-radius:8px;font-weight:600;color:var(--muted);cursor:pointer;display:flex;gap:8px;align-items:center;white-space:nowrap}
+.tabs button.on{background:#fff;color:var(--ink);box-shadow:0 1px 4px rgba(15,27,45,.12)}
+.tabs .n{background:#dbe3ee;border-radius:20px;font-size:11px;padding:0 7px}
+.tabs button.on .n{background:var(--brand-l);color:var(--brand)}
+.dotc{width:9px;height:9px;border-radius:50%;display:inline-block}
+/* modal */
+.modal-root{position:fixed;inset:0;background:rgba(11,31,51,.55);backdrop-filter:blur(3px);display:none;align-items:flex-start;justify-content:center;padding:4vh 16px;z-index:50;overflow:auto}
+.modal-root.open{display:flex}
+.modal{background:#fff;border-radius:16px;width:100%;max-width:560px;box-shadow:0 24px 70px rgba(0,0,0,.35);animation:pop .18s ease-out}
+.modal.wide{max-width:900px}
+@keyframes pop{from{opacity:0;transform:translateY(12px) scale(.98)}to{opacity:1;transform:none}}
+.m-h{display:flex;align-items:center;padding:18px 24px;border-bottom:1px solid var(--line)}
+.m-h h2{margin:0;font-size:17px;flex:1}
+.x{background:none;border:0;cursor:pointer;color:var(--muted);padding:4px;border-radius:6px;display:grid}
+.x:hover{background:#f1f5f9;color:var(--ink)}
+.m-b{padding:20px 24px}
+.m-f{display:flex;gap:10px;justify-content:flex-end;padding:14px 24px;border-top:1px solid var(--line);background:#f8fafc;border-radius:0 0 16px 16px}
+.frm{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.frm .full{grid-column:1/-1}
+.fld label{display:block;font-size:12px;font-weight:650;color:var(--ink2);margin-bottom:5px}
+.fld .inp,.fld .sel{width:100%}
+.sec-t{font-size:12px;font-weight:700;color:var(--brand);text-transform:uppercase;letter-spacing:.8px;margin:6px 0 -4px;grid-column:1/-1}
+.adder{display:grid;grid-template-columns:1fr 100px auto;gap:10px;align-items:end}
+.stage{border:1px dashed #cbd5e1;border-radius:10px;margin-top:12px;max-height:230px;overflow:auto}
+/* toast */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--navy);color:#fff;padding:13px 18px;border-radius:11px;box-shadow:0 10px 30px rgba(0,0,0,.3);z-index:80;transform:translateY(20px);opacity:0;transition:.25s;pointer-events:none;display:flex;gap:10px;align-items:center;max-width:380px}
+.toast.show{transform:none;opacity:1}
+.toast svg{color:#34d399;flex:none}
+/* charts */
+.legend{display:flex;gap:16px;margin-left:auto;font-size:12px;color:var(--muted)}
+.legend span{display:flex;gap:6px;align-items:center}
+.hbar{display:grid;grid-template-columns:150px 1fr 56px;gap:10px;align-items:center;margin:11px 0;font-size:13px}
+.hbar .t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hbar .tr{height:9px;background:#eaf0f6;border-radius:9px;overflow:hidden}
+.hbar .tr i{display:block;height:100%;background:linear-gradient(90deg,#34d399,#059669);border-radius:9px}
+.hbar .vv{text-align:right;font-weight:650}
+.donut{width:150px;height:150px;border-radius:50%;position:relative;flex:none}
+.donut::after{content:"";position:absolute;inset:26px;background:#fff;border-radius:50%}
+.donut-c{position:absolute;inset:0;display:grid;place-items:center;z-index:1;text-align:center;line-height:1.15}
+.donut-c b{font-size:16px}.donut-c small{color:var(--muted);font-size:11px}
+.lg{display:grid;gap:9px;font-size:13px;flex:1}
+.lg div{display:flex;align-items:center;gap:9px}.lg b{margin-left:auto}
+.al{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid #eef1f6;align-items:center}
+.al:last-child{border:0}
+.al .ic{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;flex:none}
+.al .tx{flex:1;min-width:0}.al .tx b{display:block;font-size:13px}.al .tx span{color:var(--muted);font-size:12px}
+/* sheet doc */
+.sheetdoc{border:1px solid var(--line);border-radius:12px;padding:24px}
+.sd-h{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid var(--ink);padding-bottom:14px;margin-bottom:16px;gap:16px}
+.sd-h h2{margin:0;font-size:19px}
+.sd-h small{color:var(--muted)}
+.sd-meta{display:grid;grid-template-columns:repeat(3,1fr);gap:10px 18px;margin-bottom:18px}
+.sd-meta div span{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.sd-meta div b{font-weight:600}
+.sd-sign{display:grid;grid-template-columns:repeat(3,1fr);gap:30px;margin-top:54px;text-align:center;font-size:12px;color:var(--muted)}
+.sd-sign div{border-top:1px solid var(--ink);padding-top:6px}
+.tot{display:flex;justify-content:flex-end;gap:30px;padding:14px;font-weight:700;font-size:15px}
+.note{background:var(--info-l);color:#1e40af;border-radius:10px;padding:10px 14px;font-size:12.5px;margin-bottom:14px}
+.click{cursor:pointer}
+.card.click{transition:transform .15s,box-shadow .15s,border-color .15s}
+.card.click:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(15,27,45,.13);border-color:#b7e4d3}
+.hbar.click:hover .t,.lg .click:hover,.legend .click:hover{color:var(--brand)}
+.hbar.click:hover .tr i{filter:brightness(1.1)}
+.al.click{margin:0 -10px;padding-left:10px;padding-right:10px;border-radius:8px}
+.al.click:hover{background:#f4f8fb}
+.legend .click{padding:2px 6px;border-radius:6px}.legend .click:hover{background:#f1f5f9}
+svg .hit{cursor:pointer}svg .hit:hover{fill:rgba(5,150,105,.08)}
+svg .bar-s{cursor:pointer;transition:opacity .12s}svg .bar-s:hover{opacity:.78}
+/* login */
+.login{position:fixed;inset:0;z-index:100;display:none;grid-template-columns:1.1fr 1fr;background:#fff}
+body.locked .login{display:grid}
+body.locked .app,body.locked .toast{display:none}
+.lg-hero{background:linear-gradient(150deg,#0b1f33 0%,#0a3a3d 55%,#047857 120%);color:#fff;padding:56px;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden}
+.lg-hero::before,.lg-hero::after{content:"";position:absolute;border-radius:50%;background:rgba(52,211,153,.09)}
+.lg-hero::before{width:420px;height:420px;right:-140px;top:-120px}.lg-hero::after{width:300px;height:300px;left:-90px;bottom:-110px}
+.lg-hero>*{position:relative;z-index:1}
+.lg-hero .logo{padding:0}
+.lg-hero h2{font-size:34px;line-height:1.15;margin:0 0 14px;letter-spacing:-.6px;max-width:460px}
+.lg-hero p{color:#a9c4cf;max-width:440px;font-size:15px;margin:0 0 28px}
+.lg-feat{display:grid;gap:12px;font-size:14px;color:#d3e4ea}
+.lg-feat div{display:flex;gap:11px;align-items:center}
+.lg-feat i{width:26px;height:26px;border-radius:8px;background:rgba(52,211,153,.18);color:#34d399;display:grid;place-items:center;flex:none}
+.lg-form{display:grid;place-items:center;padding:40px}
+.lg-form form{width:100%;max-width:370px}
+.lg-form h1{margin:0 0 6px;font-size:26px;letter-spacing:-.4px}
+.lg-form .sub{color:var(--muted);margin:0 0 26px}
+.lg-form .fld{margin-bottom:16px}
+.lg-form .inp{padding:12px 14px;font-size:15px}
+.lg-form .btn.pri{width:100%;justify-content:center;padding:12px;font-size:15px;margin-top:6px}
+.lg-err{background:var(--bad-l);color:var(--bad);border-radius:9px;padding:9px 12px;font-size:13px;margin-bottom:14px;display:none}
+.lg-hint{margin-top:22px;background:#f1f5f9;border-radius:10px;padding:12px 14px;font-size:12.5px;color:var(--ink2)}
+.lg-hint code{background:#fff;border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-weight:700}
+@media(max-width:860px){.side-foot .link-btn{font-size:0;display:block;width:34px;height:20px;position:relative}.side-foot .link-btn::before{font-size:10px;content:"↻";position:absolute;left:12px}.side-foot .link-btn[data-act=logout]::before{content:"⎋"}.login{grid-template-columns:1fr}.lg-hero{display:none}}
+@media(max-width:1180px){.g4,.g5{grid-template-columns:repeat(2,1fr)}.g2,.g3,.g21{grid-template-columns:1fr}}
+@media(max-width:860px){.app{grid-template-columns:64px 1fr}.logo div,.nav button span,.nav-l,.side-foot b,.side-foot .t,.nav .badge{display:none}.side{padding:16px 8px}.nav button{justify-content:center}.main,.top{padding-left:16px;padding-right:16px}.frm{grid-template-columns:1fr}.sd-meta{grid-template-columns:1fr 1fr}.adder{grid-template-columns:1fr 90px auto}}
+/* responsive */
+.hosted .no-host{display:none!important}
+.ls,.top-mob{display:none}
+.mlogo{display:none}
+.kxsel{min-width:340px;max-width:100%}
+.sheetdoc{overflow-x:auto}
+.grid>*,.tools>*{min-width:0}
+.top{padding-left:max(32px,env(safe-area-inset-left,0px));padding-right:max(32px,env(safe-area-inset-right,0px));top:env(safe-area-inset-top,0px)}
+.main{padding-left:max(32px,env(safe-area-inset-left,0px));padding-right:max(32px,env(safe-area-inset-right,0px))}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:60;background:#fff}
+@media(max-width:860px){
+ .side-foot{display:none}
+ .top-mob{display:flex;gap:8px}
+ .top{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+ .main{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+ .mlogo{display:block;font-weight:800;font-size:22px;color:var(--brand);margin-bottom:22px}
+ .kxsel{min-width:0;flex:1 1 100%}
+}
+@media(max-width:640px){
+ .app{grid-template-columns:1fr}
+ .side{position:fixed;left:0;right:0;bottom:0;top:auto;height:auto;flex-direction:row;padding:6px max(6px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(6px,env(safe-area-inset-left,0px));z-index:20;border-top:1px solid rgba(255,255,255,.1)}
+ .side .logo,.nav-l{display:none}
+ .nav{flex-direction:row;width:100%;gap:0}
+ .nav button{flex:1;flex-direction:column;gap:3px;padding:7px 2px;justify-content:center;align-items:center;min-width:0}
+ .nav button .lf{display:none!important}
+ .nav button .ls{display:block!important;font-size:10.5px}
+ .nav button.on::before{left:22%;right:22%;top:-6px;bottom:auto;width:auto;height:3px;border-radius:0 0 3px 3px}
+ .nav .badge{display:block!important;position:absolute;top:1px;right:14%;margin:0;font-size:9px;padding:0 5px}
+ .top{padding-top:12px;padding-bottom:12px;gap:8px}
+ .top h1{font-size:17px}
+ .top-mob .btn{padding:5px 9px}
+ .demo-tag{display:none}
+ .main{padding-top:16px;padding-bottom:calc(92px + env(safe-area-inset-bottom,0px))}
+ .g4,.g5{grid-template-columns:1fr 1fr;gap:12px}
+ .kpi{padding:14px;gap:10px;flex-direction:column}
+ .kpi .v{font-size:21px}
+ .grid{gap:14px}
+ .card-h{padding:14px 16px 0;flex-wrap:wrap}
+ .card-b{padding:12px 16px 16px}
+ .search{flex:1 1 100%}.search .inp{width:100%}
+ .tools .sel{flex:1 1 140px}
+ .tools .btn{flex:1 1 auto;justify-content:center}
+ .tools .sp{display:none}
+ .hbar{grid-template-columns:105px 1fr 40px}
+ .legend{margin-left:0;flex-wrap:wrap;width:100%}
+ .donut{width:130px;height:130px}.donut::after{inset:23px}
+ .modal-root{padding:2vh 8px}
+ .m-b{padding:16px}.m-h{padding:14px 16px}.m-f{padding:12px 16px;flex-wrap:wrap}.m-f .btn{flex:1 1 auto;justify-content:center}
+ .adder{grid-template-columns:1fr 84px}.adder .btn{grid-column:1/-1;justify-content:center}
+ .sheetdoc{padding:16px}.sd-h{flex-direction:column}.sd-h>div:last-child{text-align:left!important}
+ .sd-sign{gap:14px;margin-top:36px}
+ .toast{left:16px;right:16px;bottom:calc(84px + env(safe-area-inset-bottom,0px));max-width:none}
+ th,td{padding:10px}
+ .t-inv th:nth-child(3),.t-inv td:nth-child(3),.t-inv th:nth-child(5),.t-inv td:nth-child(5),.t-inv th:nth-child(7),.t-inv td:nth-child(7),.t-hj th:nth-child(4),.t-hj td:nth-child(4),.t-hj th:nth-child(5),.t-hj td:nth-child(5),.t-hj th:nth-child(6),.t-hj td:nth-child(6),.t-kx th:nth-child(2),.t-kx td:nth-child(2),.t-kx th:nth-child(5),.t-kx td:nth-child(5),.t-kx th:nth-child(9),.t-kx td:nth-child(9),.t-kx th:nth-child(10),.t-kx td:nth-child(10){display:none}
+ .lg-form{padding:24px max(16px,env(safe-area-inset-left,0px))}
+}
+@media print{
+  .app>*:not(.modal-root),.toast,.no-print,.m-h .x,.m-f{display:none!important}
+  .app{display:block}.modal-root{position:static;background:none;padding:0;display:block!important;backdrop-filter:none}
+  .modal{box-shadow:none;max-width:none;animation:none}.m-b{padding:0}.sheetdoc{border:0;padding:0}
+  body{background:#fff}
+}
+</style>
+</head>
+<body class="locked">
+<div class="login" id="login">
+  <div class="lg-hero">
+    <div class="logo">
+      <div class="mark"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5l8 3v6c0 5-3.4 8.6-8 10-4.6-1.4-8-5-8-10v-6l8-3z" stroke-width="1.7" fill="rgba(255,255,255,.14)"/><path d="M12 8v7M8.5 11.5h7" stroke-width="2.3"/></svg></div>
+      <div><b class="bn">FarmaControl</b><small class="bt">Gestión de farmacia</small></div>
+    </div>
+    <div>
+      <h2>Control total de insumos, dispositivos médicos y medicamentos.</h2>
+      <p>Kardex en tiempo real, hojas de consumo por paciente y alertas de stock y vencimiento, en un sistema propio de la farmacia.</p>
+      <div class="lg-feat">
+        <div><i>✓</i>Kardex de ingresos y salidas por lote (FEFO)</div>
+        <div><i>✓</i>Hojas de Quirófano, Hospitalización y Emergencia</div>
+        <div><i>✓</i>Alertas de stock mínimo y productos por vencer</div>
+      </div>
+    </div>
+    <small style="color:#7da2b8">© Versión de demostración</small>
+  </div>
+  <div class="lg-form">
+    <form id="loginForm" autocomplete="off">
+      <div class="mlogo bn">FarmaControl</div>
+      <h1>Iniciar sesión</h1>
+      <p class="sub">Ingrese sus credenciales para continuar.</p>
+      <div class="lg-err" id="lgErr">Usuario o clave incorrectos.</div>
+      <div class="fld"><label>Usuario</label><input class="inp" id="lgUser" autofocus></div>
+      <div class="fld"><label>Clave</label><input class="inp" id="lgPass" type="password"></div>
+      <button class="btn pri" type="submit">Ingresar</button>
+      <div class="lg-hint">Acceso de demostración: usuario <code>demo001</code> · clave <code>demo001</code></div>
+    </form>
+  </div>
+</div>
+<div class="app">
+  <aside class="side">
+    <div class="logo">
+      <div class="mark"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5l8 3v6c0 5-3.4 8.6-8 10-4.6-1.4-8-5-8-10v-6l8-3z" stroke-width="1.7" fill="rgba(255,255,255,.14)"/><path d="M12 8v7M8.5 11.5h7" stroke-width="2.3"/></svg></div>
+      <div><b id="brandName">FarmaControl</b><small id="brandTag">Gestión de farmacia</small></div>
+    </div>
+    <nav class="nav" id="nav"></nav>
+    <div class="side-foot">
+      <div class="u"><div class="av">QF</div><div><b>Q.F. Usuario Demo</b><span class="t">Farmacia Central</span></div></div>
+      <button class="link-btn" data-act="reset">Restablecer datos de ejemplo</button><br>
+      <button class="link-btn" data-act="logout" style="margin-top:6px">Cerrar sesión</button>
+    </div>
+  </aside>
+  <div class="main-wrap">
+    <header class="top">
+      <div><h1 id="title"></h1><div class="sub" id="today"></div></div>
+      <div class="sp"></div>
+      <span class="demo-tag">VERSIÓN DEMO · DATOS FICTICIOS</span>
+      <div class="top-mob"><button class="btn sm" data-act="reset" title="Restablecer datos de ejemplo">Restablecer</button><button class="btn sm" data-act="logout">Salir</button></div>
+    </header>
+    <main class="main" id="main"></main>
+  </div>
+  <div class="modal-root" id="modalRoot"><div class="modal" id="modal"></div></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============ utilidades ============ */
+const $=s=>document.querySelector(s);
+const DAY=864e5, KEY='farmacontrol-demo-v1';
+const pad=n=>String(n).padStart(2,'0');
+const fd=t=>{const d=new Date(t);return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()}`};
+const ft=t=>{const d=new Date(t);return `${pad(d.getHours())}:${pad(d.getMinutes())}`};
+const money=n=>'$'+Number(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const num=n=>Number(n).toLocaleString('en-US');
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ICONS={
+ dash:'<rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/>',
+ box:'<path d="M21 8l-9-5-9 5v8l9 5 9-5V8z"/><path d="M3.3 7.5L12 12.5l8.7-5M12 22V12.5"/>',
+ book:'<path d="M4 19.5V5a2 2 0 012-2h13v16H6a2 2 0 00-2 2z"/><path d="M4 19.5A2 2 0 006 21.5h13M9 8h6M9 12h6"/>',
+ file:'<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z"/><path d="M14 2v6h6M8 13h8M8 17h6"/>',
+ chart:'<path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/>',
+ bell:'<path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/>',
+ plus:'<path d="M12 5v14M5 12h14"/>',
+ search:'<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>',
+ print:'<path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/>',
+ down:'<path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>',
+ x:'<path d="M18 6L6 18M6 6l12 12"/>',
+ check:'<path d="M20 6L9 17l-5-5"/>',
+ pill:'<path d="M10.5 20.5l10-10a4.95 4.95 0 00-7-7l-10 10a4.95 4.95 0 007 7z"/><path d="M8.5 8.5l7 7"/>',
+ dollar:'<path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>',
+ clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+ alert:'<path d="M10.3 3.9L1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/><path d="M12 9v4M12 17h.01"/>',
+ trend:'<path d="M23 6l-9.5 9.5-5-5L1 18"/><path d="M17 6h6v6"/>'
+};
+const ico=(n,s=18)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${ICONS[n]}</svg>`;
+
+/* ============ datos de ejemplo ============ */
+const AREAS={
+ quirofano:{label:'Quirófano',pre:'QX',color:'var(--qx)'},
+ hospitalizacion:{label:'Hospitalización',pre:'HO',color:'var(--ho)'},
+ emergencia:{label:'Emergencia',pre:'EM',color:'var(--em)'}
+};
+const FIELDS={
+ quirofano:[['cirugia','Cirugía / procedimiento','text'],['cirujano','Cirujano','text'],['anestesiologo','Anestesiólogo','text'],['sala','Sala','sel',['Quirófano 1','Quirófano 2','Quirófano 3']]],
+ hospitalizacion:[['habitacion','Habitación / cama','text'],['medico','Médico tratante','text'],['diagnostico','Diagnóstico','text']],
+ emergencia:[['triaje','Triaje','sel',['I - Resucitación','II - Emergencia','III - Urgencia','IV - Menor urgencia','V - No urgente']],['motivo','Motivo de consulta','text'],['medico','Médico de turno','text']]
+};
+const PRODUCTS=[
+ ['MED-001','Paracetamol 1 g/100 mL','Solución inyectable','Medicamento','Frasco',40,1.10],
+ ['MED-002','Ketorolaco 30 mg/mL','Solución inyectable','Medicamento','Ampolla',60,.45],
+ ['MED-003','Ondansetrón 4 mg/2 mL','Solución inyectable','Medicamento','Ampolla',50,.60],
+ ['MED-004','Omeprazol 40 mg','Polvo liofilizado','Medicamento','Vial',40,1.35],
+ ['MED-005','Ceftriaxona 1 g','Polvo para inyección','Medicamento','Vial',80,1.20],
+ ['MED-006','Cefazolina 1 g','Polvo para inyección','Medicamento','Vial',80,1.05],
+ ['MED-007','Dexametasona 8 mg/2 mL','Solución inyectable','Medicamento','Ampolla',40,.55],
+ ['MED-008','Lidocaína 2% sin epinefrina','Frasco 20 mL','Medicamento','Frasco',20,1.80],
+ ['MED-009','Bupivacaína 0.5% pesada','Ampolla 4 mL','Medicamento','Ampolla',25,3.40],
+ ['MED-010','Propofol 1% 20 mL','Emulsión inyectable','Medicamento','Ampolla',30,3.90],
+ ['MED-011','Fentanilo 0.05 mg/mL','Ampolla 2 mL','Medicamento','Ampolla',30,1.60,1],
+ ['MED-012','Midazolam 5 mg/mL','Ampolla 3 mL','Medicamento','Ampolla',25,1.25,1],
+ ['MED-013','Morfina 10 mg/mL','Ampolla 1 mL','Medicamento','Ampolla',20,1.70,1],
+ ['MED-014','Rocuronio 50 mg/5 mL','Solución inyectable','Medicamento','Vial',20,4.60],
+ ['MED-015','Cloruro de sodio 0.9% 1000 mL','Solución IV','Medicamento','Frasco',120,1.15],
+ ['MED-016','Lactato de Ringer 1000 mL','Solución IV','Medicamento','Frasco',100,1.25],
+ ['MED-017','Adrenalina 1 mg/mL','Ampolla 1 mL','Medicamento','Ampolla',25,.85],
+ ['MED-018','Tramadol 100 mg/2 mL','Solución inyectable','Medicamento','Ampolla',40,.70],
+ ['DIS-001','Catéter venoso periférico 20G','Estéril, con alas','Dispositivo médico','Unidad',150,.55],
+ ['DIS-002','Catéter venoso periférico 18G','Estéril, con alas','Dispositivo médico','Unidad',100,.55],
+ ['DIS-003','Jeringa 10 mL con aguja','Desechable','Dispositivo médico','Unidad',300,.12],
+ ['DIS-004','Jeringa 5 mL con aguja','Desechable','Dispositivo médico','Unidad',300,.10],
+ ['DIS-005','Equipo de venoclisis','Con cámara de goteo','Dispositivo médico','Unidad',150,.70],
+ ['DIS-006','Sonda Foley 16 Fr','Látex, 2 vías','Dispositivo médico','Unidad',30,2.10],
+ ['DIS-007','Sutura Vicryl 2-0','Absorbible, 70 cm','Dispositivo médico','Unidad',60,3.80],
+ ['DIS-008','Sutura Nylon 3-0','No absorbible','Dispositivo médico','Unidad',60,2.20],
+ ['DIS-009','Tubo endotraqueal 7.5','Con balón','Dispositivo médico','Unidad',25,2.60],
+ ['DIS-010','Mascarilla de oxígeno adulto','Con reservorio','Dispositivo médico','Unidad',30,.95],
+ ['INS-001','Guantes quirúrgicos estériles 7.5','Látex','Insumo','Par',200,.55],
+ ['INS-002','Gasa estéril 10×10 cm','Paquete x 5','Insumo','Paquete',300,.20],
+ ['INS-003','Compresa de laparotomía','Estéril','Insumo','Unidad',100,.90],
+ ['INS-004','Alcohol antiséptico 70%','Frasco 1 L','Insumo','Frasco',20,3.20],
+ ['INS-005','Povidona yodada','Frasco 1 L','Insumo','Frasco',20,6.50],
+ ['INS-006','Esparadrapo micropore','Rollo 2.5 cm','Insumo','Rollo',60,.85],
+ ['INS-007','Bata quirúrgica estéril','Descartable','Insumo','Unidad',80,2.40],
+ ['INS-008','Campo quirúrgico estéril','Descartable','Insumo','Unidad',60,1.80]
+];
+const PROFILE={
+ quirofano:['MED-003','MED-006','MED-007','MED-008','MED-009','MED-010','MED-011','MED-012','MED-014','MED-015','MED-016','DIS-001','DIS-003','DIS-004','DIS-007','DIS-008','DIS-009','INS-001','INS-002','INS-003','INS-005','INS-007','INS-008'],
+ hospitalizacion:['MED-001','MED-002','MED-004','MED-005','MED-007','MED-015','MED-016','MED-018','DIS-001','DIS-002','DIS-003','DIS-004','DIS-005','DIS-006','INS-002','INS-006'],
+ emergencia:['MED-001','MED-002','MED-003','MED-005','MED-013','MED-015','MED-016','MED-017','MED-018','DIS-001','DIS-002','DIS-003','DIS-005','DIS-010','INS-001','INS-002','INS-006']
+};
+const NAMES=['María Fernanda Ortiz','Carlos Andrés Mejía','Lucía Elizabeth Paredes','José Luis Villacís','Ana Gabriela Torres','Pedro Antonio Salazar','Verónica del Carmen Ruiz','Diego Armando Cevallos','Patricia Alexandra León','Fernando Xavier Báez','Gloria Beatriz Almeida','Luis Alberto Narváez','Sofía Valentina Chiriboga','Marco Vinicio Endara','Rosa Elena Játiva','Andrés Sebastián Proaño','Carmen Lucía Aguirre','Jorge Eduardo Benítez','Daniela Michelle Cárdenas','Ricardo Javier Quishpe'];
+const CIRUGIAS=['Colecistectomía laparoscópica','Apendicectomía','Cesárea segmentaria','Hernioplastia inguinal','Artroscopía de rodilla','Histerectomía abdominal','Reducción abierta de fémur','Tiroidectomía parcial'];
+const MEDICOS=['Dr. Esteban Monteros','Dra. Paola Játiva','Dr. Raúl Escobar','Dra. Mónica Albán','Dr. Santiago Rivadeneira','Dra. Karla Zambrano'];
+const DX=['Neumonía adquirida en comunidad','Post-operatorio inmediato','Infección de vías urinarias complicada','Gastroenteritis aguda con deshidratación','Colelitiasis sintomática','Celulitis de miembro inferior'];
+const MOTIVOS=['Dolor abdominal agudo','Trauma de miembro superior','Fiebre persistente','Crisis hipertensiva','Dificultad respiratoria','Herida cortante','Cefalea intensa'];
+const PROVEEDORES=['Distribuidora Médica del Pacífico','Laboratorios Andinos S.A.','Importadora Salud Total','Suministros Hospitalarios Quito'];
+
+let DB={}, state={view:'dashboard',inv:{q:'',cat:'',est:''},kx:1,tab:'quirofano',hq:'',rep:30,draft:null};
+
+function rng(seed){return()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const prod=id=>DB.products.find(p=>p.id===id);
+const prodByCode=c=>DB.products.find(p=>p.code===c);
+const total=p=>p.lots.reduce((s,l)=>s+l.qty,0);
+const avail=(p,t=Date.now())=>p.lots.filter(l=>l.venc>t).reduce((s,l)=>s+l.qty,0);
+function pushMove(m){DB.moves.push({id:++DB.mid,...m})}
+function receive(p,lote,venc,qty,t,ref,detalle,user='Q.F. Demo'){
+  let l=p.lots.find(x=>x.lote===lote); if(!l){l={lote,venc,qty:0};p.lots.push(l)}
+  l.qty+=qty; pushMove({t,prodId:p.id,tipo:'Entrada',d:qty,lote,ref,detalle,user,costo:p.costo});
+}
+function dispense(p,qty,c){
+  const t=c.t||Date.now();
+  const lots=p.lots.filter(l=>l.qty>0&&l.venc>t).sort((a,b)=>a.venc-b.venc);
+  let need=qty; const out=[];
+  for(const l of lots){ if(need<=0)break; const take=Math.min(l.qty,need); l.qty-=take; need-=take; out.push({lote:l.lote,cant:take});
+    pushMove({t,prodId:p.id,tipo:c.tipo||'Salida',d:-take,lote:l.lote,ref:c.ref,area:c.area,detalle:c.detalle,user:'Q.F. Demo',costo:p.costo}); }
+  return out;
+}
+function addItems(s,items,t){
+  items.forEach(({prodId,cant})=>{const p=prod(prodId);
+    dispense(p,cant,{t,ref:s.id,area:s.area,detalle:'Paciente: '+s.paciente}).forEach(a=>s.items.push({prodId,lote:a.lote,cant:a.cant,precio:p.precio}));});
+}
+function createSheet(data,items,t){
+  const pre=AREAS[data.area].pre; const n=++DB.seq[pre];
+  const s={id:pre+'-'+String(n).padStart(4,'0'),...data,t,items:[],estado:'Abierta'};
+  DB.sheets.push(s); addItems(s,items,t); return s;
+}
+const sheetTotal=s=>s.items.reduce((a,i)=>a+i.cant*i.precio,0);
+
+function seed(){
+  const r=rng(2026), now=Date.now(), pick=a=>a[Math.floor(r()*a.length)];
+  DB={products:[],moves:[],sheets:[],seq:{QX:0,HO:0,EM:0},mid:0};
+  const lotCode=()=>'L'+(2400+Math.floor(r()*700))+String.fromCharCode(65+Math.floor(r()*6));
+  const LOW={'MED-011':.9,'MED-012':1.1,'MED-014':.5,'MED-009':1,'DIS-007':.6,'INS-005':.9};
+  const days={'MED-007':18,'MED-003':41,'MED-005':27,'MED-001':74,'INS-006':52,'INS-004':-6};
+  PRODUCTS.forEach(([code,name,pres,cat,unit,min,costo,ctrl],i)=>{
+    const p={id:i+1,code,name,pres,cat,unit,min,costo,precio:+(costo*1.35).toFixed(2),ctrl:!!ctrl,lots:[]};
+    DB.products.push(p);
+    const v1=days[code]!==undefined?days[code]:Math.round(70+r()*330);
+    const lowK=LOW[code];
+    const q1=code==='INS-004'?4:lowK!==undefined?Math.round(min*lowK*.7)+5:Math.round(min*(1.3+r()*1.6)), q2=lowK!==undefined?Math.round(min*lowK*.3)+3:Math.round(min*(.7+r()*1));
+    const sup=pick(PROVEEDORES);
+    receive(p,lotCode(),now+v1*DAY,q1,now-62*DAY,'FAC-'+(1000+i),'Ingreso inicial · '+sup);
+    receive(p,lotCode(),now+Math.round(260+r()*480)*DAY,q2,now-40*DAY,'FAC-'+(1100+i),'Compra · '+sup);
+  });
+  const dd=[]; for(let i=0;i<44;i++)dd.push(Math.round(r()*44)); dd.sort((a,b)=>b-a);
+  dd.forEach(d=>{
+    const x=r(); const area=x<.4?'quirofano':x<.7?'hospitalizacion':'emergencia';
+    const t=now-d*DAY-Math.round(r()*10)*3600e3-3600e3;
+    const base={area,paciente:pick(NAMES),cedula:String(1700000000+Math.floor(r()*99999999)),hc:'HC-'+(100000+Math.floor(r()*899999)),edad:18+Math.floor(r()*65)};
+    let data;
+    if(area==='quirofano')data={...base,cirugia:pick(CIRUGIAS),cirujano:pick(MEDICOS),anestesiologo:pick(MEDICOS),sala:'Quirófano '+(1+Math.floor(r()*3))};
+    else if(area==='hospitalizacion')data={...base,habitacion:'Hab. '+(201+Math.floor(r()*30))+'-'+pick(['A','B']),medico:pick(MEDICOS),diagnostico:pick(DX)};
+    else data={...base,triaje:pick(FIELDS.emergencia[0][3]),motivo:pick(MOTIVOS),medico:pick(MEDICOS)};
+    const n=3+Math.floor(r()*6), pool=[...PROFILE[area]], items=[];
+    for(let k=0;k<n&&pool.length;k++){
+      const p=prodByCode(pool.splice(Math.floor(r()*pool.length),1)[0]);
+      let q=p.cat==='Medicamento'?1+Math.floor(r()*4):p.cat==='Insumo'?2+Math.floor(r()*6):1+Math.floor(r()*3);
+      if(p.code==='DIS-003'||p.code==='DIS-004')q=2+Math.floor(r()*5);
+      if(avail(p,t)>=q)items.push({prodId:p.id,cant:q});
+    }
+    const s=createSheet(data,items,t);
+    s.estado=(d>3||area!=='hospitalizacion'&&d>0)?'Cerrada':'Abierta';
+  });
+  DB.sheets.filter(s=>s.area==='hospitalizacion').slice(-3).forEach(s=>s.estado='Abierta');
+  for(let i=0;i<6;i++){const p=pick(DB.products); receive(p,'L'+(2700+i)+'R',now+Math.round(300+r()*300)*DAY,Math.round(p.min*(.4+r()*.5)),now-(3+i*2)*DAY,'FAC-'+(1300+i),'Reposición · '+pick(PROVEEDORES));}
+  [['MED-011',.55],['MED-012',.8],['MED-014',.35],['MED-009',.8],['DIS-007',.45],['INS-005',.7],['INS-008',0]].forEach(([c,k])=>{
+    const p=prodByCode(c), a=avail(p,now), tg=Math.floor(p.min*k);
+    if(a>tg)dispense(p,a-tg,{t:now-2*DAY,ref:'AJ-'+c.slice(-3),tipo:'Ajuste',detalle:'Ajuste por conteo físico'});
+  });
+  DB.moves.sort((a,b)=>a.t-b.t);
+  return DB;
+}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(DB))}catch(e){}}
+function load(){try{const s=localStorage.getItem(KEY);return s?JSON.parse(s):null}catch(e){return null}}
+
+/* ============ estado de productos ============ */
+function pstate(p){
+  const a=avail(p);
+  if(a<=0)return{t:'Agotado',c:'bad',r:0};
+  if(a<=p.min*.5)return{t:'Crítico',c:'bad',r:1};
+  if(a<=p.min)return{t:'Stock bajo',c:'warn',r:2};
+  return{t:'Óptimo',c:'ok',r:3};
+}
+function nextExp(p){const ls=p.lots.filter(l=>l.qty>0).sort((a,b)=>a.venc-b.venc);return ls[0]||null}
+function expTag(p){
+  const l=nextExp(p); if(!l)return '<span class="muted">—</span>';
+  const d=Math.floor((l.venc-Date.now())/DAY);
+  if(d<0)return `<span class="tag t-bad dot">Vencido</span>`;
+  if(d<=30)return `<span class="tag t-bad dot">${d} días</span>`;
+  if(d<=90)return `<span class="tag t-warn dot">${d} días</span>`;
+  return `<span class="muted">${fd(l.venc)}</span>`;
+}
+function alerts(){
+  const now=Date.now(), stock=DB.products.filter(p=>pstate(p).r<3).sort((a,b)=>pstate(a).r-pstate(b).r);
+  const exp=[]; DB.products.forEach(p=>p.lots.forEach(l=>{if(l.qty>0&&l.venc<=now+90*DAY)exp.push({p,l,d:Math.floor((l.venc-now)/DAY)})}));
+  exp.sort((a,b)=>a.d-b.d); return{stock,exp};
+}
+
+/* ============ vistas ============ */
+const NAV=[['dashboard','Panel general','dash','Panel'],['inventario','Inventario','box','Inventario'],['kardex','Kardex','book','Kardex'],['hojas','Hojas por paciente','file','Hojas'],['reportes','Reportes','chart','Reportes'],['alertas','Alertas','bell','Alertas']];
+const TITLES={dashboard:'Panel general',inventario:'Inventario de productos',kardex:'Kardex de ingreso y salida',hojas:'Hojas de consumo por paciente',reportes:'Reportes de consumo',alertas:'Alertas y vencimientos'};
+
+function renderNav(){
+  const al=alerts(), n=al.stock.length+al.exp.length;
+  $('#nav').innerHTML='<div class="nav-l">Menú</div>'+NAV.map(([k,l,i,sh])=>`<button class="${state.view===k?'on':''}" data-act="go" data-v="${k}">${ico(i,19)}<span class="lf">${l}</span><span class="ls">${sh}</span>${k==='alertas'&&n?`<em class="badge" style="font-style:normal">${n}</em>`:''}</button>`).join('');
+}
+function render(scroll){
+  renderNav(); $('#title').textContent=TITLES[state.view];
+  const hoy=new Date().toLocaleDateString('es-EC',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  $('#today').textContent=hoy.charAt(0).toUpperCase()+hoy.slice(1);
+  $('#main').innerHTML=VIEWS[state.view]();
+  document.querySelectorAll('#main table').forEach(t=>{const h=t.querySelector('th'),c={'Código':'t-inv','Fecha':'t-kx','N° hoja':'t-hj'}[h&&h.textContent];if(c)t.classList.add(c)});
+  if(scroll)window.scrollTo(0,0);
+}
+const kpi=(ic,cls,l,v,d,a='')=>`<div class="card kpi${a?' click':''}" ${a}><div class="ic ${cls}">${ico(ic,22)}</div><div><div class="l">${l}</div><div class="v">${v}</div><div class="d">${d}</div></div></div>`;
+
+function niceMax(m){const s=Math.pow(10,Math.floor(Math.log10(m)))/2;return Math.ceil(m/s)*s}
+function chartConsumo(){
+  const days=14, d0=new Date(); d0.setHours(0,0,0,0); const start=d0.getTime()-(days-1)*DAY;
+  const b=Array.from({length:days},(_,i)=>({t:start+i*DAY,quirofano:0,hospitalizacion:0,emergencia:0}));
+  DB.moves.forEach(m=>{if(m.tipo==='Salida'&&m.area&&m.t>=start){const i=Math.floor((m.t-start)/DAY); if(b[i])b[i][m.area]+=Math.abs(m.d)*prod(m.prodId).costo}});
+  const mx=niceMax(Math.max(10,...b.map(x=>x.quirofano+x.hospitalizacion+x.emergencia)));
+  const W=700,H=250,L=46,B=28,T=10,bw=(W-L)/days,ph=H-B-T; let g='',bars='';
+  b.forEach((x,i)=>{bars+=`<rect class="hit" data-act="dayDetail" data-t="${x.t}" x="${L+i*bw}" y="${T}" width="${bw}" height="${ph+B}" fill="transparent"><title>Ver detalle del ${fd(x.t)}</title></rect>`});
+  for(let i=0;i<=4;i++){const y=T+ph-ph*i/4;g+=`<line x1="${L}" x2="${W}" y1="${y}" y2="${y}" stroke="#e8edf3"/><text x="${L-8}" y="${y+4}" text-anchor="end" font-size="11" fill="#94a3b8">$${Math.round(mx*i/4)}</text>`}
+  b.forEach((x,i)=>{let y=T+ph;const cx=L+i*bw+bw*.18,w=bw*.64;
+    ['quirofano','hospitalizacion','emergencia'].forEach(a=>{const h=ph*x[a]/mx; if(h>0){y-=h;bars+=`<rect class="bar-s" data-act="dayDetail" data-t="${x.t}" x="${cx}" y="${y}" width="${w}" height="${h}" fill="${AREAS[a].color}" rx="2"><title>${AREAS[a].label} · ${fd(x.t)}: ${money(x[a])}</title></rect>`}});
+    const dt=new Date(x.t); if(i%2===0||days<8)bars+=`<text x="${cx+w/2}" y="${H-8}" text-anchor="middle" font-size="11" fill="#94a3b8">${pad(dt.getDate())}/${pad(dt.getMonth()+1)}</text>`});
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" style="display:block">${g}${bars}</svg>`;
+}
+function topProductos(days,n){
+  const from=Date.now()-days*DAY, map={};
+  DB.moves.forEach(m=>{if(m.tipo==='Salida'&&m.t>=from)map[m.prodId]=(map[m.prodId]||0)+Math.abs(m.d)});
+  return Object.entries(map).map(([id,q])=>({p:prod(+id),q})).sort((a,b)=>b.q-a.q).slice(0,n);
+}
+function dashboard(){
+  const al=alerts(), now=Date.now();
+  const value=DB.products.reduce((s,p)=>s+total(p)*p.costo,0);
+  const m30=DB.moves.filter(m=>m.tipo==='Salida'&&m.t>=now-30*DAY).reduce((s,m)=>s+Math.abs(m.d)*prod(m.prodId).costo,0);
+  const open=DB.sheets.filter(s=>s.estado==='Abierta').length;
+  const cats={}; DB.products.forEach(p=>cats[p.cat]=(cats[p.cat]||0)+total(p)*p.costo);
+  const cc=['#059669','#6366f1','#f59e0b'], ce=Object.entries(cats), tv=ce.reduce((s,[,v])=>s+v,0); let acc=0;
+  const grad=ce.map(([,v],i)=>{const a=acc/tv*100;acc+=v;return `${cc[i]} ${a}% ${acc/tv*100}%`}).join(',');
+  const top=topProductos(30,6), tm=top[0]?top[0].q:1;
+  const recent=[...DB.moves].sort((a,b)=>b.t-a.t).slice(0,7);
+  const crit=al.stock.slice(0,4), ex=al.exp.slice(0,3);
+  return `
+  <div class="grid g4" style="margin-bottom:18px">
+    ${kpi('box','c-brand','Productos activos',DB.products.length,`${DB.products.filter(p=>p.cat==='Medicamento').length} medicamentos · ${DB.products.filter(p=>p.cat!=='Medicamento').length} dispositivos e insumos`,'data-act="invFilter"')}
+    ${kpi('dollar','c-info','Valor del inventario',money(value),'A costo promedio','data-act="invFilter"')}
+    ${kpi('alert','c-bad','Productos en alerta',al.stock.length,`${al.stock.filter(p=>pstate(p).r<=1).length} críticos o agotados`,'data-act="invFilter" data-est="alerta"')}
+    ${kpi('clock','c-warn','Lotes por vencer (90 d)',al.exp.length,`${al.exp.filter(x=>x.d<0).length} ya vencidos`,'data-act="go" data-v="alertas"')}
+  </div>
+  <div class="grid g2" style="margin-bottom:18px">
+    <div class="card"><div class="card-h"><h3>Consumo por área · últimos 14 días</h3>
+      <div class="legend">${Object.entries(AREAS).map(([k,a])=>`<span class="click" data-act="tabGo" data-k="${k}" title="Ver hojas de ${a.label}"><i class="dotc" style="background:${a.color}"></i>${a.label}</span>`).join('')}</div></div>
+      <div class="card-b">${chartConsumo()}<div class="muted" style="font-size:12px;margin-top:4px">Valor a costo de los productos despachados · Último mes: <b style="color:var(--ink)">${money(m30)}</b> · Hojas abiertas: <b style="color:var(--ink)">${open}</b></div></div></div>
+    <div class="card"><div class="card-h"><h3>Inventario por categoría</h3></div>
+      <div class="card-b" style="display:flex;gap:22px;align-items:center;flex-wrap:wrap">
+        <div class="donut" style="background:conic-gradient(${grad})"><div class="donut-c"><div><b>${money(tv).replace(/\.\d+$/,'')}</b><br><small>valor total</small></div></div></div>
+        <div class="lg">${ce.map(([k,v],i)=>`<div class="click" data-act="invFilter" data-cat="${k}" title="Ver ${k}"><i class="dotc" style="background:${cc[i]}"></i>${k}<b>${Math.round(v/tv*100)}%</b></div>`).join('')}</div>
+      </div></div>
+  </div>
+  <div class="grid g3">
+    <div class="card"><div class="card-h"><h3>Más consumidos (30 días)</h3></div><div class="card-b">
+      ${top.map(({p,q})=>`<div class="hbar click" data-act="kardexOf" data-id="${p.id}" title="Ver kardex"><span class="t" title="${esc(p.name)}">${esc(p.name)}</span><div class="tr"><i style="width:${q/tm*100}%"></i></div><span class="vv">${num(q)}</span></div>`).join('')}</div></div>
+    <div class="card"><div class="card-h"><h3>Alertas prioritarias</h3><button class="btn sm" style="margin-left:auto" data-act="go" data-v="alertas">Ver todas</button></div><div class="card-b" style="padding-top:6px">
+      ${crit.map(p=>{const s=pstate(p);return `<div class="al click" data-act="kardexOf" data-id="${p.id}"><div class="ic c-${s.c==='bad'?'bad':'warn'}">${ico('alert',17)}</div><div class="tx"><b>${esc(p.name)}</b><span>Disponible ${num(avail(p))} · mínimo ${p.min}</span></div><span class="tag t-${s.c}">${s.t}</span></div>`}).join('')}
+      ${ex.map(({p,l,d})=>`<div class="al click" data-act="kardexOf" data-id="${p.id}"><div class="ic c-warn">${ico('clock',17)}</div><div class="tx"><b>${esc(p.name)}</b><span>Lote ${l.lote} · ${num(l.qty)} uds</span></div><span class="tag t-${d<0||d<=30?'bad':'warn'}">${d<0?'Vencido':d+' días'}</span></div>`).join('')}
+    </div></div>
+    <div class="card"><div class="card-h"><h3>Últimos movimientos</h3><button class="btn sm" style="margin-left:auto" data-act="go" data-v="kardex">Kardex</button></div><div class="card-b" style="padding-top:6px">
+      ${recent.map(m=>{const p=prod(m.prodId),e=m.d>0;return `<div class="al click" data-act="kardexOf" data-id="${p.id}"><div class="ic ${e?'c-ok':'c-brand'}" style="font-weight:700;font-size:15px">${e?'↓':'↑'}</div><div class="tx"><b>${esc(p.name)}</b><span>${m.ref} · ${fd(m.t)} ${ft(m.t)}</span></div><b class="${e?'pos':'neg'}">${e?'+':''}${m.d}</b></div>`}).join('')}
+    </div></div>
+  </div>`;
+}
+
+function invRows(){
+  const f=state.inv, q=f.q.trim().toLowerCase();
+  const rows=DB.products.filter(p=>(!q||(p.name+' '+p.code+' '+p.pres).toLowerCase().includes(q))&&(!f.cat||p.cat===f.cat)&&(!f.est||(f.est==='alerta'?pstate(p).r<3:pstate(p).t===f.est)));
+  if(!rows.length)return `<tr><td colspan="9"><div class="empty">No hay productos que coincidan con la búsqueda.</div></td></tr>`;
+  return rows.map(p=>{const s=pstate(p),t=total(p),pc=Math.min(100,t/(p.min*2.5)*100),col=s.c==='ok'?'var(--ok)':s.c==='warn'?'#f59e0b':'var(--bad)';
+    return `<tr><td class="mono">${p.code}</td><td class="pn"><b>${esc(p.name)}${p.ctrl?'<span class="ctrl">CONTROLADO</span>':''}</b><span>${esc(p.pres)}</span></td>
+    <td>${p.cat}</td><td style="min-width:130px"><b>${num(t)}</b> <span class="muted">${p.unit.toLowerCase()}s</span><div class="bar"><i style="width:${pc}%;background:${col}"></i></div></td>
+    <td class="r muted">${p.min}</td><td>${expTag(p)}</td><td class="r">${money(p.costo)}</td><td><span class="tag t-${s.c} dot">${s.t}</span></td>
+    <td class="r"><button class="btn sm" data-act="kardexOf" data-id="${p.id}">Kardex</button> <button class="btn sm" data-act="ingreso" data-id="${p.id}">+ Ingreso</button></td></tr>`}).join('');
+}
+function inventario(){
+  const f=state.inv;
+  return `<div class="tools">
+    <div class="search">${ico('search',16)}<input class="inp" placeholder="Buscar por nombre, código o presentación…" value="${esc(f.q)}" data-in="invq" id="invq"></div>
+    <select class="sel" data-in="invcat"><option value="">Todas las categorías</option>${['Medicamento','Dispositivo médico','Insumo'].map(c=>`<option ${f.cat===c?'selected':''}>${c}</option>`).join('')}</select>
+    <select class="sel" data-in="invest"><option value="">Todos los estados</option><option value="alerta" ${f.est==='alerta'?'selected':''}>Con alerta</option>${['Óptimo','Stock bajo','Crítico','Agotado'].map(c=>`<option ${f.est===c?'selected':''}>${c}</option>`).join('')}</select>
+    <div class="sp"></div>
+    <button class="btn no-host" data-act="csvInv">${ico('down',16)}Exportar</button>
+    <button class="btn pri" data-act="newProd">${ico('plus',16)}Nuevo producto</button></div>
+  <div class="card"><div class="tbl-wrap"><table><thead><tr><th>Código</th><th>Producto</th><th>Categoría</th><th>Existencia</th><th class="r">Mínimo</th><th>Próx. vencimiento</th><th class="r">Costo unit.</th><th>Estado</th><th></th></tr></thead>
+  <tbody id="invbody">${invRows()}</tbody></table></div></div>`;
+}
+
+function kardexRows(p){
+  const ms=DB.moves.filter(m=>m.prodId===p.id).sort((a,b)=>a.t-b.t||a.id-b.id); let s=0;
+  return ms.map(m=>{s+=m.d;return{...m,saldo:s}});
+}
+function kardex(){
+  const p=prod(state.kx)||DB.products[0], rows=kardexRows(p), st=pstate(p), now=Date.now();
+  const ent=rows.filter(r=>r.d>0).reduce((a,r)=>a+r.d,0), sal=-rows.filter(r=>r.d<0).reduce((a,r)=>a+r.d,0);
+  return `<div class="tools">
+    <select class="sel kxsel" data-in="kx">${DB.products.map(x=>`<option value="${x.id}" ${x.id===p.id?'selected':''}>${x.code} · ${esc(x.name)}</option>`).join('')}</select>
+    <div class="sp"></div>
+    <button class="btn no-host" data-act="csvKx">${ico('down',16)}Exportar</button>
+    <button class="btn no-host" data-act="print">${ico('print',16)}Imprimir</button>
+    <button class="btn" data-act="ajuste" data-id="${p.id}">Ajuste</button>
+    <button class="btn pri" data-act="ingreso" data-id="${p.id}">${ico('plus',16)}Registrar ingreso</button></div>
+  <div class="grid g4" style="margin-bottom:18px">
+    ${kpi('box','c-brand','Existencia actual',num(total(p)),esc(p.unit)+'s · mínimo '+p.min)}
+    ${kpi('dollar','c-info','Valor en stock',money(total(p)*p.costo),'Costo unit. '+money(p.costo))}
+    ${kpi('trend','c-ok','Total entradas',num(ent),'Histórico del producto')}
+    ${kpi('trend','c-warn','Total salidas',num(sal),'<span class="tag t-'+st.c+' dot" style="margin-top:2px">'+st.t+'</span>')}
+  </div>
+  <div class="card" style="margin-bottom:18px"><div class="card-h"><h3>Lotes en existencia</h3><span class="hint">Despacho automático FEFO (primero en vencer, primero en salir)</span></div><div class="card-b" style="padding-top:8px">
+    <div class="tbl-wrap"><table><thead><tr><th>Lote</th><th>Vencimiento</th><th>Estado</th><th class="r">Cantidad</th></tr></thead><tbody>
+    ${p.lots.filter(l=>l.qty>0).sort((a,b)=>a.venc-b.venc).map(l=>{const d=Math.floor((l.venc-now)/DAY);return `<tr><td class="mono">${l.lote}</td><td>${fd(l.venc)}</td><td>${d<0?'<span class="tag t-bad dot">Vencido</span>':d<=90?`<span class="tag t-warn dot">Vence en ${d} días</span>`:'<span class="tag t-ok dot">Vigente</span>'}</td><td class="r"><b>${num(l.qty)}</b></td></tr>`}).join('')||'<tr><td colspan="4"><div class="empty">Sin lotes con existencia.</div></td></tr>'}
+    </tbody></table></div></div></div>
+  <div class="card"><div class="card-h"><h3>${esc(p.name)} <span class="muted" style="font-weight:400">· ${esc(p.pres)}</span></h3></div><div class="card-b" style="padding-top:8px"><div class="tbl-wrap"><table>
+    <thead><tr><th>Fecha</th><th>Documento</th><th>Tipo</th><th>Detalle</th><th>Lote</th><th class="r">Entrada</th><th class="r">Salida</th><th class="r">Saldo</th><th class="r">Valor saldo</th><th>Usuario</th></tr></thead><tbody>
+    ${[...rows].reverse().map(r=>`<tr><td style="white-space:nowrap">${fd(r.t)} <span class="muted">${ft(r.t)}</span></td><td class="mono">${esc(r.ref)}</td>
+    <td><span class="tag ${r.d>0?'t-ok':r.tipo==='Salida'?'t-info':'t-warn'}">${r.tipo}</span></td><td>${esc(r.detalle||'')}</td><td class="mono">${esc(r.lote)}</td>
+    <td class="r pos">${r.d>0?'+'+num(r.d):''}</td><td class="r neg">${r.d<0?num(r.d):''}</td><td class="r"><b>${num(r.saldo)}</b></td><td class="r muted">${money(r.saldo*p.costo)}</td><td class="muted">${esc(r.user)}</td></tr>`).join('')}
+    </tbody></table></div></div></div>`;
+}
+
+function sheetDetail(s){
+  const f=FIELDS[s.area];
+  if(s.area==='quirofano')return `${s.cirugia} · ${s.sala}`;
+  if(s.area==='hospitalizacion')return `${s.habitacion} · ${s.diagnostico}`;
+  return `${s.triaje.split(' ')[0]} · ${s.motivo}`;
+}
+function hojas(){
+  const a=state.tab, q=state.hq.trim().toLowerCase();
+  const list=DB.sheets.filter(s=>s.area===a&&(!q||(s.paciente+s.hc+s.id).toLowerCase().includes(q))).sort((x,y)=>y.t-x.t);
+  return `<div class="tools"><div class="tabs">${Object.entries(AREAS).map(([k,v])=>`<button class="${a===k?'on':''}" data-act="tab" data-k="${k}"><i class="dotc" style="background:${v.color}"></i>${v.label}<span class="n">${DB.sheets.filter(s=>s.area===k).length}</span></button>`).join('')}</div>
+    <div class="search">${ico('search',16)}<input class="inp" placeholder="Buscar paciente, HC o N° de hoja…" value="${esc(state.hq)}" data-in="hq" id="hq"></div>
+    <div class="sp"></div><button class="btn pri" data-act="newSheet">${ico('plus',16)}Nueva hoja de ${AREAS[a].label.toLowerCase()}</button></div>
+  <div class="card"><div class="tbl-wrap"><table><thead><tr><th>N° hoja</th><th>Fecha</th><th>Paciente</th><th>Historia clínica</th><th>Detalle</th><th class="c">Ítems</th><th class="r">Total</th><th>Estado</th><th></th></tr></thead><tbody>
+  ${list.map(s=>`<tr><td class="mono"><b>${s.id}</b></td><td style="white-space:nowrap">${fd(s.t)} <span class="muted">${ft(s.t)}</span></td><td class="pn"><b>${esc(s.paciente)}</b><span>${s.edad} años · CI ${esc(s.cedula)}</span></td><td class="mono">${esc(s.hc)}</td><td>${esc(sheetDetail(s))}</td>
+  <td class="c">${new Set(s.items.map(i=>i.prodId)).size}</td><td class="r"><b>${money(sheetTotal(s))}</b></td><td><span class="tag ${s.estado==='Abierta'?'t-info':'t-ok'} dot">${s.estado}</span></td><td class="r"><button class="btn sm" data-act="viewSheet" data-id="${s.id}">Ver hoja</button></td></tr>`).join('')||`<tr><td colspan="9"><div class="empty">No hay hojas registradas.</div></td></tr>`}
+  </tbody></table></div></div>`;
+}
+
+function repData(days){
+  const from=Date.now()-days*DAY, ss=DB.sheets.filter(s=>s.t>=from);
+  const byArea=Object.keys(AREAS).map(k=>{const x=ss.filter(s=>s.area===k);return{k,n:x.length,uds:x.reduce((a,s)=>a+s.items.reduce((b,i)=>b+i.cant,0),0),val:x.reduce((a,s)=>a+sheetTotal(s),0)}});
+  const byCat={}; ss.forEach(s=>s.items.forEach(i=>{const c=prod(i.prodId).cat;byCat[c]=(byCat[c]||0)+i.cant*i.precio}));
+  return{ss,byArea,byCat,pac:[...ss].sort((a,b)=>sheetTotal(b)-sheetTotal(a)).slice(0,8),top:topProductos(days,8)};
+}
+function reportes(){
+  const d=repData(state.rep), tv=d.byArea.reduce((a,x)=>a+x.val,0), mx=Math.max(1,...d.byArea.map(x=>x.val));
+  return `<div class="tools"><select class="sel" data-in="rep">${[[7,'Últimos 7 días'],[30,'Últimos 30 días'],[90,'Últimos 90 días']].map(([v,l])=>`<option value="${v}" ${state.rep===v?'selected':''}>${l}</option>`).join('')}</select>
+    <div class="sp"></div><button class="btn no-host" data-act="csvRep">${ico('down',16)}Exportar detalle</button><button class="btn no-host" data-act="print2">${ico('print',16)}Imprimir</button></div>
+  <div class="grid g4" style="margin-bottom:18px">
+    ${kpi('file','c-brand','Hojas registradas',d.ss.length,'En el período')}
+    ${kpi('dollar','c-info','Valor facturable',money(tv),'Consumo a precio de venta')}
+    ${kpi('pill','c-ok','Unidades despachadas',num(d.byArea.reduce((a,x)=>a+x.uds,0)),'Entre las 3 áreas')}
+    ${kpi('trend','c-warn','Promedio por hoja',money(d.ss.length?tv/d.ss.length:0),'Valor medio')}
+  </div>
+  <div class="grid g21" style="margin-bottom:18px">
+    <div class="card"><div class="card-h"><h3>Consumo por área</h3></div><div class="card-b">
+      ${d.byArea.map(x=>`<div style="margin:14px 0"><div style="display:flex;justify-content:space-between;margin-bottom:6px"><span><i class="dotc" style="background:${AREAS[x.k].color}"></i> <b>${AREAS[x.k].label}</b> <span class="muted">· ${x.n} hojas · ${num(x.uds)} uds</span></span><b>${money(x.val)}</b></div><div class="bar" style="height:9px"><i style="width:${x.val/mx*100}%;background:${AREAS[x.k].color}"></i></div></div>`).join('')}
+      <div style="margin-top:20px;padding-top:14px;border-top:1px solid var(--line)" class="muted">Por categoría: ${Object.entries(d.byCat).map(([k,v])=>`<b style="color:var(--ink)">${k}</b> ${money(v)}`).join(' · ')}</div></div></div>
+    <div class="card"><div class="card-h"><h3>Productos más despachados</h3></div><div class="card-b">
+      ${d.top.map(({p,q})=>`<div class="hbar"><span class="t" title="${esc(p.name)}">${esc(p.name)}</span><div class="tr"><i style="width:${q/d.top[0].q*100}%"></i></div><span class="vv">${num(q)}</span></div>`).join('')||'<div class="empty">Sin datos.</div>'}</div></div>
+  </div>
+  <div class="card"><div class="card-h"><h3>Pacientes con mayor consumo</h3></div><div class="card-b" style="padding-top:8px"><div class="tbl-wrap"><table><thead><tr><th>Hoja</th><th>Paciente</th><th>Área</th><th>Fecha</th><th class="c">Unidades</th><th class="r">Total</th></tr></thead><tbody>
+    ${d.pac.map(s=>`<tr><td class="mono">${s.id}</td><td><b>${esc(s.paciente)}</b></td><td><i class="dotc" style="background:${AREAS[s.area].color}"></i> ${AREAS[s.area].label}</td><td>${fd(s.t)}</td><td class="c">${s.items.reduce((a,i)=>a+i.cant,0)}</td><td class="r"><b>${money(sheetTotal(s))}</b></td></tr>`).join('')}
+  </tbody></table></div></div></div>`;
+}
+
+function alertas(){
+  const al=alerts();
+  return `<div class="grid g21" style="align-items:start">
+  <div class="card"><div class="card-h"><h3>Stock bajo o agotado</h3><span class="hint">${al.stock.length} productos</span></div><div class="card-b" style="padding-top:8px"><div class="tbl-wrap"><table><thead><tr><th>Producto</th><th class="r">Disponible</th><th class="r">Mínimo</th><th>Estado</th><th></th></tr></thead><tbody>
+  ${al.stock.map(p=>{const s=pstate(p);return `<tr><td class="pn"><b>${esc(p.name)}</b><span>${p.code}</span></td><td class="r"><b>${num(avail(p))}</b></td><td class="r muted">${p.min}</td><td><span class="tag t-${s.c} dot">${s.t}</span></td><td class="r"><button class="btn sm" data-act="ingreso" data-id="${p.id}">+ Ingreso</button></td></tr>`}).join('')||'<tr><td colspan="5"><div class="empty">Todo el inventario está sobre el mínimo.</div></td></tr>'}
+  </tbody></table></div></div></div>
+  <div class="card"><div class="card-h"><h3>Lotes próximos a vencer (90 días)</h3><span class="hint">${al.exp.length} lotes</span></div><div class="card-b" style="padding-top:8px"><div class="tbl-wrap"><table><thead><tr><th>Producto / lote</th><th class="r">Cant.</th><th>Vence</th><th></th></tr></thead><tbody>
+  ${al.exp.map(({p,l,d})=>`<tr><td class="pn"><b>${esc(p.name)}</b><span>Lote ${l.lote}</span></td><td class="r"><b>${num(l.qty)}</b></td><td><span class="tag t-${d<=30?'bad':'warn'} dot">${d<0?'Vencido hace '+(-d)+' d':d+' días'}</span></td><td class="r">${d<0?`<button class="btn sm danger" data-act="baja" data-id="${p.id}" data-lote="${l.lote}">Dar de baja</button>`:''}</td></tr>`).join('')||'<tr><td colspan="4"><div class="empty">No hay lotes próximos a vencer.</div></td></tr>'}
+  </tbody></table></div></div></div></div>`;
+}
+const VIEWS={dashboard,inventario,kardex,hojas,reportes,alertas};
+
+/* ============ modales y utilidades UI ============ */
+function openModal(html,wide){$('#modal').className='modal'+(wide?' wide':'');$('#modal').innerHTML=html;$('#modalRoot').classList.add('open')}
+let pendingYes=null;
+function ask(title,msg,label,fn){pendingYes=fn;openModal(`${mh(title)}<div class="m-b"><p style="margin:0">${msg}</p></div><div class="m-f"><button class="btn" data-act="close">Cancelar</button><button class="btn pri" data-act="askYes">${label}</button></div>`)}
+function closeModal(){$('#modalRoot').classList.remove('open');state.draft=null}
+function toast(msg){const t=$('#toast');t.innerHTML=ico('check',20)+'<span>'+msg+'</span>';t.classList.add('show');clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove('show'),3200)}
+const mh=(t)=>`<div class="m-h"><h2>${t}</h2><button class="x" data-act="close">${ico('x',20)}</button></div>`;
+function csv(name,rows){
+  const body='﻿'+rows.map(r=>r.map(c=>`"${String(c??'').replace(/"/g,'""')}"`).join(',')).join('\r\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([body],{type:'text/csv;charset=utf-8'}));a.download=name;a.click();toast('Archivo '+name+' generado');
+}
+const val=id=>{const e=document.getElementById(id);return e?e.value.trim():''};
+
+function modalIngreso(p){
+  const y=new Date(Date.now()+365*DAY).toISOString().slice(0,10);
+  openModal(`${mh('Registrar ingreso de producto')}<div class="m-b"><div class="note"><b>${esc(p.name)}</b> · ${esc(p.pres)} · existencia actual ${num(total(p))}</div><div class="frm">
+   <div class="fld"><label>Lote</label><input class="inp" id="i_lote" placeholder="Ej. L2845B"></div>
+   <div class="fld"><label>Fecha de vencimiento</label><input class="inp" type="date" id="i_venc" value="${y}"></div>
+   <div class="fld"><label>Cantidad (${esc(p.unit.toLowerCase())}s)</label><input class="inp" type="number" min="1" id="i_cant" placeholder="0"></div>
+   <div class="fld"><label>Costo unitario ($)</label><input class="inp" type="number" step="0.01" min="0" id="i_costo" value="${p.costo}"></div>
+   <div class="fld"><label>N° factura / guía</label><input class="inp" id="i_ref" placeholder="FAC-001-000123"></div>
+   <div class="fld"><label>Proveedor</label><select class="sel" id="i_prov">${PROVEEDORES.map(x=>`<option>${x}</option>`).join('')}</select></div>
+  </div></div><div class="m-f"><button class="btn" data-act="close">Cancelar</button><button class="btn pri" data-act="saveIngreso" data-id="${p.id}">Registrar ingreso</button></div>`);
+}
+function modalAjuste(p){
+  openModal(`${mh('Ajuste de inventario')}<div class="m-b"><div class="note"><b>${esc(p.name)}</b> · existencia actual ${num(total(p))}. Use cantidad negativa para disminuir.</div><div class="frm">
+   <div class="fld"><label>Cantidad de ajuste (+ / −)</label><input class="inp" type="number" id="a_cant" placeholder="-3"></div>
+   <div class="fld"><label>Motivo</label><select class="sel" id="a_mot"><option>Conteo físico</option><option>Producto dañado</option><option>Error de digitación</option><option>Devolución de servicio</option></select></div>
+  </div></div><div class="m-f"><button class="btn" data-act="close">Cancelar</button><button class="btn pri" data-act="saveAjuste" data-id="${p.id}">Aplicar ajuste</button></div>`);
+}
+function modalProd(){
+  openModal(`${mh('Nuevo producto')}<div class="m-b"><div class="frm">
+   <div class="fld"><label>Código</label><input class="inp" id="n_code" placeholder="MED-019"></div>
+   <div class="fld"><label>Categoría</label><select class="sel" id="n_cat"><option>Medicamento</option><option>Dispositivo médico</option><option>Insumo</option></select></div>
+   <div class="fld full"><label>Nombre</label><input class="inp" id="n_name" placeholder="Ej. Metoclopramida 10 mg/2 mL"></div>
+   <div class="fld"><label>Presentación</label><input class="inp" id="n_pres" placeholder="Solución inyectable"></div>
+   <div class="fld"><label>Unidad de medida</label><input class="inp" id="n_unit" value="Unidad"></div>
+   <div class="fld"><label>Stock mínimo</label><input class="inp" type="number" min="0" id="n_min" value="20"></div>
+   <div class="fld"><label>Costo unitario ($)</label><input class="inp" type="number" step="0.01" min="0" id="n_costo" value="1.00"></div>
+   <div class="fld full"><label style="display:flex;gap:8px;align-items:center;font-weight:500"><input type="checkbox" id="n_ctrl"> Medicamento controlado (registro especial)</label></div>
+  </div></div><div class="m-f"><button class="btn" data-act="close">Cancelar</button><button class="btn pri" data-act="saveProd">Guardar producto</button></div>`);
+}
+
+function sheetModal(){
+  const d=state.draft, add=d.mode==='add', f=FIELDS[d.area];
+  const fields=add?'':`<div class="frm" style="margin-bottom:18px"><div class="sec-t">Datos del paciente</div>
+   <div class="fld full"><label>Nombre completo del paciente *</label><input class="inp" id="f_paciente" placeholder="Apellidos y nombres"></div>
+   <div class="fld"><label>Cédula</label><input class="inp" id="f_cedula" placeholder="1700000000"></div>
+   <div class="fld"><label>Historia clínica</label><input class="inp" id="f_hc" placeholder="HC-000000"></div>
+   <div class="fld"><label>Edad</label><input class="inp" type="number" id="f_edad" min="0" max="120"></div>
+   <div class="sec-t">Datos de ${AREAS[d.area].label.toLowerCase()}</div>
+   ${f.map(([k,l,t,o])=>`<div class="fld"><label>${l}</label>${t==='sel'?`<select class="sel" id="f_${k}">${o.map(x=>`<option>${x}</option>`).join('')}</select>`:`<input class="inp" id="f_${k}">`}</div>`).join('')}</div>`;
+  const opts=DB.products.map(p=>`<option value="${p.id}" ${avail(p)<=0?'disabled':''}>${p.code} · ${esc(p.name)} — disp. ${num(avail(p))}</option>`).join('');
+  openModal(`${mh(add?'Agregar productos a '+d.sheetId:'Nueva hoja de '+AREAS[d.area].label.toLowerCase())}<div class="m-b">${fields}
+   <div class="sec-t" style="margin-bottom:10px">Productos despachados</div>
+   <div class="adder"><div class="fld"><label>Producto</label><select class="sel" id="d_prod">${opts}</select></div><div class="fld"><label>Cantidad</label><input class="inp" type="number" min="1" value="1" id="d_cant"></div><button class="btn" data-act="stageAdd">${ico('plus',16)}Agregar</button></div>
+   <div class="stage" id="stage"></div></div>
+   <div class="m-f"><button class="btn" data-act="close">Cancelar</button><button class="btn pri" data-act="saveSheet">Guardar y descontar del kardex</button></div>`,true);
+  renderStage();
+}
+function renderStage(){
+  const d=state.draft,el=$('#stage'); if(!el)return;
+  if(!d.items.length){el.innerHTML='<div class="empty" style="padding:22px">Aún no se agregaron productos. Seleccione un producto y presione “Agregar”.</div>';return}
+  el.innerHTML=`<table><thead><tr><th>Producto</th><th class="r">Cant.</th><th class="r">P. unit.</th><th class="r">Subtotal</th><th></th></tr></thead><tbody>${d.items.map((i,n)=>{const p=prod(i.prodId);return `<tr><td class="pn"><b>${esc(p.name)}</b><span>${p.code}</span></td><td class="r">${i.cant}</td><td class="r">${money(p.precio)}</td><td class="r"><b>${money(i.cant*p.precio)}</b></td><td class="r"><button class="x" data-act="stageDel" data-n="${n}">${ico('x',16)}</button></td></tr>`}).join('')}</tbody></table>
+  <div class="tot" style="padding:10px 14px"><span>Total</span><span>${money(d.items.reduce((a,i)=>a+i.cant*prod(i.prodId).precio,0))}</span></div>`;
+}
+function viewSheet(s){
+  const f=FIELDS[s.area], rows=s.items;
+  openModal(`${mh('Hoja '+s.id)}<div class="m-b"><div class="sheetdoc">
+   <div class="sd-h"><div><h2>Clínica Demo · Farmacia Central</h2><small>Hoja de consumo · ${AREAS[s.area].label}</small></div><div style="text-align:right"><b style="font-size:17px">${s.id}</b><br><small>${fd(s.t)} ${ft(s.t)}</small><br><span class="tag ${s.estado==='Abierta'?'t-info':'t-ok'} dot">${s.estado}</span></div></div>
+   <div class="sd-meta"><div><span>Paciente</span><b>${esc(s.paciente)}</b></div><div><span>Cédula</span><b>${esc(s.cedula)}</b></div><div><span>Historia clínica</span><b>${esc(s.hc)}</b></div><div><span>Edad</span><b>${/^\d+$/.test(s.edad)?esc(s.edad)+' años':'—'}</b></div>
+   ${f.map(([k,l])=>`<div><span>${l}</span><b>${esc(s[k]||'—')}</b></div>`).join('')}</div>
+   <table><thead><tr><th>Código</th><th>Producto</th><th>Lote</th><th class="r">Cant.</th><th class="r">P. unit.</th><th class="r">Subtotal</th></tr></thead><tbody>
+   ${rows.map(i=>{const p=prod(i.prodId);return `<tr><td class="mono">${p.code}</td><td>${esc(p.name)}</td><td class="mono">${esc(i.lote)}</td><td class="r">${i.cant}</td><td class="r">${money(i.precio)}</td><td class="r">${money(i.cant*i.precio)}</td></tr>`}).join('')||'<tr><td colspan="6"><div class="empty">Sin productos.</div></td></tr>'}</tbody></table>
+   <div class="tot"><span>Total de la hoja</span><span>${money(sheetTotal(s))}</span></div>
+   <div class="sd-sign"><div>Farmacéutico responsable</div><div>Enfermería / Médico</div><div>Recibí conforme</div></div></div></div>
+   <div class="m-f"><button class="btn no-host" data-act="print">${ico('print',16)}Imprimir</button>${s.estado==='Abierta'?`<button class="btn" data-act="addTo" data-id="${s.id}">${ico('plus',16)}Agregar productos</button><button class="btn pri" data-act="closeSheet" data-id="${s.id}">Cerrar hoja</button>`:''}<button class="btn" data-act="close">Cerrar ventana</button></div>`,true);
+}
+
+/* ============ acciones ============ */
+const A={
+ go(d){state.view=d.v;render(true)},
+ close(){closeModal()},
+ reset(){ask('Restablecer datos de ejemplo','Se perderán los cambios hechos en esta demo y se cargarán de nuevo los datos de ejemplo.','Restablecer',()=>{try{localStorage.removeItem(KEY)}catch(e){}seed();save();render();toast('Datos de ejemplo restablecidos')})},
+ askYes(){const f=pendingYes;pendingYes=null;closeModal();f&&f()},
+ kardexOf(d){state.kx=+d.id;state.view='kardex';render(true)},
+ tab(d){state.tab=d.k;render()},
+ tabGo(d){state.tab=d.k;state.view='hojas';render(true)},
+ invFilter(d){state.inv={q:'',cat:d.cat||'',est:d.est||''};state.view='inventario';render(true)},
+ dayDetail(d){
+  const t0=+d.t, t1=t0+DAY, g={};
+  DB.moves.forEach(m=>{if(m.tipo==='Salida'&&m.area&&m.t>=t0&&m.t<t1){const x=g[m.ref]||(g[m.ref]={ref:m.ref,area:m.area,uds:0,val:0});x.uds+=-m.d;x.val+=-m.d*prod(m.prodId).costo}});
+  const rows=Object.values(g).sort((a,b)=>b.val-a.val), tot=rows.reduce((a,x)=>a+x.val,0);
+  openModal(`${mh('Despachos del '+fd(t0))}<div class="m-b">${rows.length?`<div class="note">${rows.length} hojas · valor a costo <b>${money(tot)}</b></div>
+   <div class="tbl-wrap"><table><thead><tr><th>Hoja</th><th>Área</th><th>Paciente</th><th class="c">Unidades</th><th class="r">Valor (costo)</th><th></th></tr></thead><tbody>
+   ${rows.map(x=>{const s=DB.sheets.find(h=>h.id===x.ref);return `<tr><td class="mono"><b>${x.ref}</b></td><td><i class="dotc" style="background:${AREAS[x.area].color}"></i> ${AREAS[x.area].label}</td><td>${esc(s?s.paciente:'—')}</td><td class="c">${x.uds}</td><td class="r"><b>${money(x.val)}</b></td><td class="r"><button class="btn sm" data-act="viewSheet" data-id="${x.ref}">Ver hoja</button></td></tr>`}).join('')}</tbody></table></div>`:'<div class="empty">No hubo despachos registrados este día.</div>'}</div>
+   <div class="m-f"><button class="btn" data-act="close">Cerrar</button></div>`,true);
+ },
+ print(){window.print()},
+ print2(){window.print()},
+ ingreso(d){modalIngreso(prod(+d.id))},
+ ajuste(d){modalAjuste(prod(+d.id))},
+ newProd(){modalProd()},
+ saveIngreso(d){
+  const p=prod(+d.id),lote=val('i_lote'),cant=+val('i_cant'),venc=val('i_venc');
+  if(!lote||!(cant>0)||!venc){toast('Complete lote, vencimiento y cantidad');return}
+  const c=parseFloat(val('i_costo')); if(c>0)p.costo=c;
+  receive(p,lote,new Date(venc+'T12:00:00').getTime(),cant,Date.now(),val('i_ref')||'S/N','Compra · '+val('i_prov'));
+  save();closeModal();render();toast(`Ingreso registrado: +${cant} ${p.name}`);
+ },
+ saveAjuste(d){
+  const p=prod(+d.id),c=parseInt(val('a_cant'),10);
+  if(!c){toast('Ingrese una cantidad distinta de cero');return}
+  if(c<0&&-c>total(p)){toast('El ajuste supera la existencia');return}
+  if(c>0){const l=[...p.lots].sort((a,b)=>b.venc-a.venc)[0];l.qty+=c;pushMove({t:Date.now(),prodId:p.id,tipo:'Ajuste',d:c,lote:l.lote,ref:'AJ-'+DB.mid,detalle:val('a_mot'),user:'Q.F. Demo',costo:p.costo})}
+  else{let need=-c;p.lots.filter(l=>l.qty>0).sort((a,b)=>a.venc-b.venc).forEach(l=>{if(need<=0)return;const t=Math.min(l.qty,need);l.qty-=t;need-=t;pushMove({t:Date.now(),prodId:p.id,tipo:'Ajuste',d:-t,lote:l.lote,ref:'AJ-'+DB.mid,detalle:val('a_mot'),user:'Q.F. Demo',costo:p.costo})})}
+  save();closeModal();render();toast('Ajuste aplicado al kardex');
+ },
+ saveProd(){
+  const code=val('n_code').toUpperCase(),name=val('n_name');
+  if(!code||!name){toast('Código y nombre son obligatorios');return}
+  if(DB.products.some(p=>p.code===code)){toast('Ya existe un producto con ese código');return}
+  const costo=parseFloat(val('n_costo'))||0;
+  const id=Math.max(...DB.products.map(p=>p.id))+1;
+  DB.products.push({id,code,name,pres:val('n_pres'),cat:val('n_cat'),unit:val('n_unit')||'Unidad',min:+val('n_min')||0,costo,precio:+(costo*1.35).toFixed(2),ctrl:$('#n_ctrl').checked,lots:[]});
+  save();closeModal();state.kx=id;render();toast('Producto creado. Registre su primer ingreso.');
+ },
+ baja(d){
+  const p=prod(+d.id),l=p.lots.find(x=>x.lote===d.lote); if(!l||!l.qty)return;
+  ask('Dar de baja lote',`Se darán de baja <b>${l.qty}</b> unidades del lote <b>${esc(l.lote)}</b> de ${esc(p.name)}. El movimiento quedará registrado en el kardex.`,'Dar de baja',()=>{
+  pushMove({t:Date.now(),prodId:p.id,tipo:'Baja',d:-l.qty,lote:l.lote,ref:'BJ-'+DB.mid,detalle:'Baja por vencimiento',user:'Q.F. Demo',costo:p.costo});
+  l.qty=0;save();render();toast('Lote dado de baja y registrado en kardex')});
+ },
+ newSheet(){state.draft={mode:'new',area:state.tab,items:[]};sheetModal()},
+ addTo(d){state.draft={mode:'add',area:DB.sheets.find(s=>s.id===d.id).area,sheetId:d.id,items:[]};sheetModal()},
+ viewSheet(d){viewSheet(DB.sheets.find(s=>s.id===d.id))},
+ stageAdd(){
+  const id=+val('d_prod'),c=parseInt(val('d_cant'),10),p=prod(id),dr=state.draft;
+  if(!(c>0))return;
+  const have=dr.items.filter(i=>i.prodId===id).reduce((a,i)=>a+i.cant,0);
+  if(have+c>avail(p)){toast(`Stock insuficiente: disponible ${avail(p)-have}`);return}
+  const ex=dr.items.find(i=>i.prodId===id); ex?ex.cant+=c:dr.items.push({prodId:id,cant:c});
+  renderStage();
+ },
+ stageDel(d){state.draft.items.splice(+d.n,1);renderStage()},
+ saveSheet(){
+  const dr=state.draft;
+  if(!dr.items.length){toast('Agregue al menos un producto');return}
+  if(dr.mode==='add'){
+    const s=DB.sheets.find(x=>x.id===dr.sheetId);addItems(s,dr.items,Date.now());save();closeModal();render();toast('Productos agregados y descontados del kardex');viewSheet(s);return;
+  }
+  if(!val('f_paciente')){toast('Ingrese el nombre del paciente');return}
+  const data={area:dr.area,paciente:val('f_paciente'),cedula:val('f_cedula')||'—',hc:val('f_hc')||'—',edad:val('f_edad')||'—'};
+  FIELDS[dr.area].forEach(([k])=>data[k]=val('f_'+k));
+  const s=createSheet(data,dr.items,Date.now());save();closeModal();render();toast(`Hoja ${s.id} creada y stock actualizado`);viewSheet(s);
+ },
+ closeSheet(d){const s=DB.sheets.find(x=>x.id===d.id);s.estado='Cerrada';save();render();viewSheet(s);toast('Hoja cerrada')},
+ csvInv(){csv('inventario.csv',[['Código','Producto','Presentación','Categoría','Existencia','Mínimo','Costo','Estado'],...DB.products.map(p=>[p.code,p.name,p.pres,p.cat,total(p),p.min,p.costo,pstate(p).t])])},
+ csvKx(){const p=prod(state.kx);csv('kardex-'+p.code+'.csv',[['Fecha','Documento','Tipo','Detalle','Lote','Entrada','Salida','Saldo'],...kardexRows(p).map(r=>[fd(r.t)+' '+ft(r.t),r.ref,r.tipo,r.detalle,r.lote,r.d>0?r.d:'',r.d<0?-r.d:'',r.saldo])])},
+ csvRep(){const d=repData(state.rep);csv('consumo-por-hoja.csv',[['Hoja','Fecha','Área','Paciente','HC','Producto','Lote','Cantidad','Precio','Subtotal'],...d.ss.flatMap(s=>s.items.map(i=>[s.id,fd(s.t),AREAS[s.area].label,s.paciente,s.hc,prod(i.prodId).name,i.lote,i.cant,i.precio,(i.cant*i.precio).toFixed(2)]))])}
+};
+const I={
+ invq(el){state.inv.q=el.value;$('#invbody').innerHTML=invRows()},
+ invcat(el){state.inv.cat=el.value;$('#invbody').innerHTML=invRows()},
+ invest(el){state.inv.est=el.value;$('#invbody').innerHTML=invRows()},
+ hq(el){state.hq=el.value;const pos=el.selectionStart;render();const n=$('#hq');n.focus();n.setSelectionRange(pos,pos)},
+ kx(el){state.kx=+el.value;render()},
+ rep(el){state.rep=+el.value;render()}
+};
+document.addEventListener('click',e=>{
+  if(e.target===$('#modalRoot')){closeModal();return}
+  const el=e.target.closest('[data-act]'); if(el&&A[el.dataset.act])A[el.dataset.act](el.dataset,el);
+});
+document.addEventListener('input',e=>{const el=e.target.closest('[data-in]'); if(el&&I[el.dataset.in])I[el.dataset.in](el)});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
+
+/* ============ marca (editar aquí) ============ */
+const HOSTED=true; // true al publicar en la web (sin impresión ni descargas)
+if(HOSTED)document.body.classList.add('hosted');
+const BRAND={name:'FarmaControl',tagline:'Gestión de farmacia'};
+$('#brandName').textContent=BRAND.name;$('#brandTag').textContent=BRAND.tagline;document.title=BRAND.name+' · Demo';
+document.querySelectorAll('.bn').forEach(e=>e.textContent=BRAND.name);document.querySelectorAll('.bt').forEach(e=>e.textContent=BRAND.tagline);
+/* ============ acceso (demo) ============ */
+const SKEY='farmacontrol-demo-session', DEMO_USER='demo001', DEMO_PASS='demo001';
+const logged=()=>{try{return sessionStorage.getItem(SKEY)==='1'}catch(e){return false}};
+function setLocked(l){document.body.classList.toggle('locked',l);if(l){$('#lgPass').value='';setTimeout(()=>$('#lgUser').focus(),50)}}
+$('#loginForm').addEventListener('submit',e=>{
+  e.preventDefault();
+  if($('#lgUser').value.trim().toLowerCase()===DEMO_USER&&$('#lgPass').value===DEMO_PASS){
+    try{sessionStorage.setItem(SKEY,'1')}catch(x){}
+    $('#lgErr').style.display='none';setLocked(false);state.view='dashboard';render(true);toast('Bienvenido, Q.F. Usuario Demo');
+  }else{$('#lgErr').style.display='block'}
+});
+A.logout=()=>{try{sessionStorage.removeItem(SKEY)}catch(e){}closeModal();$('#lgUser').value='';setLocked(true)};
+setLocked(!logged());
+/* ============ inicio ============ */
+DB=load(); if(!DB||!DB.products)seed(),save();
+render();
+</script>
+</body>
+</html>

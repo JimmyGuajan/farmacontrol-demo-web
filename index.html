@@ -188,6 +188,12 @@ body.locked .app,body.locked .toast{display:none}
 @media(max-width:860px){.side-foot .link-btn{font-size:0;display:block;width:34px;height:20px;position:relative}.side-foot .link-btn::before{font-size:10px;content:"↻";position:absolute;left:12px}.side-foot .link-btn[data-act=logout]::before{content:"⎋"}.login{grid-template-columns:1fr}.lg-hero{display:none}}
 @media(max-width:1180px){.g4,.g5{grid-template-columns:repeat(2,1fr)}.g2,.g3,.g21{grid-template-columns:1fr}}
 @media(max-width:860px){.app{grid-template-columns:64px 1fr}.logo div,.nav button span,.nav-l,.side-foot b,.side-foot .t,.nav .badge{display:none}.side{padding:16px 8px}.nav button{justify-content:center}.main,.top{padding-left:16px;padding-right:16px}.frm{grid-template-columns:1fr}.sd-meta{grid-template-columns:1fr 1fr}.adder{grid-template-columns:1fr 90px auto}}
+/* planes */
+.plan-tag{font-size:11px;font-weight:700;letter-spacing:.8px;padding:5px 10px;border-radius:20px;background:#eef2f7;color:var(--ink2)}
+.plan-tag.premium{background:#ede9fe;color:#6d28d9}
+.nav .badge.pro{background:#f59e0b;color:#3b2a05}
+@media(max-width:860px){.demo-tag{display:none}}
+@media(max-width:640px){.plan-tag{display:none}}
 /* responsive */
 .hosted .no-host{display:none!important}
 .ls,.top-mob{display:none}
@@ -279,7 +285,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
       <div class="fld"><label>Usuario</label><input class="inp" id="lgUser" autofocus></div>
       <div class="fld"><label>Clave</label><input class="inp" id="lgPass" type="password"></div>
       <button class="btn pri" type="submit">Ingresar</button>
-      <div class="lg-hint">Acceso de demostración: usuario <code>demo001</code> · clave <code>demo001</code></div>
+      <div class="lg-hint"><b>Acceso de demostración</b><br>Versión Estándar: usuario <code>demo001</code> · clave <code>demo001</code><br>Versión Premium: usuario <code>demo002</code> · clave <code>demo002</code></div>
     </form>
   </div>
 </div>
@@ -291,7 +297,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
     </div>
     <nav class="nav" id="nav"></nav>
     <div class="side-foot">
-      <div class="u"><div class="av">QF</div><div><b>Q.F. Usuario Demo</b><span class="t">Farmacia Central</span></div></div>
+      <div class="u"><div class="av">QF</div><div><b>Q.F. Usuario Demo</b><span class="t" id="planLabel">Farmacia Central</span></div></div>
       <button class="link-btn" data-act="reset">Restablecer datos de ejemplo</button><br>
       <button class="link-btn" data-act="logout" style="margin-top:6px">Cerrar sesión</button>
     </div>
@@ -300,7 +306,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
     <header class="top">
       <div><h1 id="title"></h1><div class="sub" id="today"></div></div>
       <div class="sp"></div>
-      <span class="demo-tag">VERSIÓN DEMO · DATOS FICTICIOS</span>
+      <span class="plan-tag" id="planTag"></span><span class="demo-tag">VERSIÓN DEMO · DATOS FICTICIOS</span>
       <div class="top-mob"><button class="btn sm" data-act="reset" title="Restablecer datos de ejemplo">Restablecer</button><button class="btn sm" data-act="logout">Salir</button></div>
     </header>
     <main class="main" id="main"></main>
@@ -401,7 +407,7 @@ const DX=['Neumonía adquirida en comunidad','Post-operatorio inmediato','Infecc
 const MOTIVOS=['Dolor abdominal agudo','Trauma de miembro superior','Fiebre persistente','Crisis hipertensiva','Dificultad respiratoria','Herida cortante','Cefalea intensa'];
 const PROVEEDORES=['Distribuidora Médica del Pacífico','Laboratorios Andinos S.A.','Importadora Salud Total','Suministros Hospitalarios Quito'];
 
-let DB={}, state={view:'dashboard',inv:{q:'',cat:'',est:''},kx:1,tab:'quirofano',hq:'',rep:30,draft:null};
+let DB={}, state={view:'dashboard',inv:{q:'',cat:'',est:''},kx:1,kxf:'',tab:'quirofano',hq:'',rep:30,draft:null};
 
 function rng(seed){return()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
 const prod=id=>DB.products.find(p=>p.id===id);
@@ -508,10 +514,11 @@ const TITLES={dashboard:'Panel general',inventario:'Inventario de productos',kar
 
 function renderNav(){
   const al=alerts(), n=al.stock.length+al.exp.length;
-  $('#nav').innerHTML='<div class="nav-l">Menú</div>'+NAV.map(([k,l,i,sh])=>`<button class="${state.view===k?'on':''}" data-act="go" data-v="${k}">${ico(i,19)}<span class="lf">${l}</span><span class="ls">${sh}</span>${k==='alertas'&&n?`<em class="badge" style="font-style:normal">${n}</em>`:''}</button>`).join('');
+  $('#nav').innerHTML='<div class="nav-l">Menú</div>'+NAV.map(([k,l,i,sh])=>`<button class="${state.view===k?'on':''}" data-act="go" data-v="${k}">${ico(i,19)}<span class="lf">${l}</span><span class="ls">${sh}</span>${k==='alertas'&&n?`<em class="badge" style="font-style:normal">${n}</em>`:''}${k==='reportes'&&PLAN!=='premium'?'<em class="badge pro" style="font-style:normal">PRO</em>':''}</button>`).join('');
 }
 function render(scroll){
-  renderNav(); $('#title').textContent=TITLES[state.view];
+  renderNav();
+  $('#planTag').textContent=PLAN==='premium'?'PREMIUM':'ESTÁNDAR';$('#planTag').className='plan-tag '+PLAN;$('#planLabel').textContent='Farmacia Central · '+(PLAN==='premium'?'Plan Premium':'Plan Estándar'); $('#title').textContent=TITLES[state.view];
   const hoy=new Date().toLocaleDateString('es-EC',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
   $('#today').textContent=hoy.charAt(0).toUpperCase()+hoy.slice(1);
   $('#main').innerHTML=VIEWS[state.view]();
@@ -618,18 +625,18 @@ function kardex(){
     <button class="btn" data-act="ajuste" data-id="${p.id}">Ajuste</button>
     <button class="btn pri" data-act="ingreso" data-id="${p.id}">${ico('plus',16)}Registrar ingreso</button></div>
   <div class="grid g4" style="margin-bottom:18px">
-    ${kpi('box','c-brand','Existencia actual',num(total(p)),esc(p.unit)+'s · mínimo '+p.min)}
-    ${kpi('dollar','c-info','Valor en stock',money(total(p)*p.costo),'Costo unit. '+money(p.costo))}
-    ${kpi('trend','c-ok','Total entradas',num(ent),'Histórico del producto')}
-    ${kpi('trend','c-warn','Total salidas',num(sal),'<span class="tag t-'+st.c+' dot" style="margin-top:2px">'+st.t+'</span>')}
+    ${kpi('box','c-brand','Existencia actual',num(total(p)),'<span class="tag t-'+st.c+' dot">'+st.t+'</span> mínimo '+p.min,'data-act="kxGo" data-t="kxlots"')}
+    ${kpi('dollar','c-info','Valor en stock',money(total(p)*p.costo),'Costo unit. '+money(p.costo)+' · ver lotes','data-act="kxGo" data-t="kxlots"')}
+    ${kpi('trend','c-ok','Total entradas',num(ent),state.kxf==='in'?'Filtro activo · clic para quitar':'Clic para ver solo entradas','data-act="kxFilter" data-f="in"'+(state.kxf==='in'?' style="outline:2px solid var(--brand);outline-offset:-2px"':''))}
+    ${kpi('trend','c-warn','Total salidas',num(sal),state.kxf==='out'?'Filtro activo · clic para quitar':'Clic para ver solo salidas','data-act="kxFilter" data-f="out"'+(state.kxf==='out'?' style="outline:2px solid var(--brand);outline-offset:-2px"':''))}
   </div>
-  <div class="card" style="margin-bottom:18px"><div class="card-h"><h3>Lotes en existencia</h3><span class="hint">Despacho automático FEFO (primero en vencer, primero en salir)</span></div><div class="card-b" style="padding-top:8px">
+  <div class="card" id="kxlots" style="margin-bottom:18px"><div class="card-h"><h3>Lotes en existencia</h3><span class="hint">Despacho automático FEFO (primero en vencer, primero en salir)</span></div><div class="card-b" style="padding-top:8px">
     <div class="tbl-wrap"><table><thead><tr><th>Lote</th><th>Vencimiento</th><th>Estado</th><th class="r">Cantidad</th></tr></thead><tbody>
     ${p.lots.filter(l=>l.qty>0).sort((a,b)=>a.venc-b.venc).map(l=>{const d=Math.floor((l.venc-now)/DAY);return `<tr><td class="mono">${l.lote}</td><td>${fd(l.venc)}</td><td>${d<0?'<span class="tag t-bad dot">Vencido</span>':d<=90?`<span class="tag t-warn dot">Vence en ${d} días</span>`:'<span class="tag t-ok dot">Vigente</span>'}</td><td class="r"><b>${num(l.qty)}</b></td></tr>`}).join('')||'<tr><td colspan="4"><div class="empty">Sin lotes con existencia.</div></td></tr>'}
     </tbody></table></div></div></div>
-  <div class="card"><div class="card-h"><h3>${esc(p.name)} <span class="muted" style="font-weight:400">· ${esc(p.pres)}</span></h3></div><div class="card-b" style="padding-top:8px"><div class="tbl-wrap"><table>
+  <div class="card" id="kxmoves"><div class="card-h"><h3>${esc(p.name)} <span class="muted" style="font-weight:400">· ${esc(p.pres)}</span></h3>${state.kxf?`<button class="btn sm" style="margin-left:auto" data-act="kxFilter" data-f="${state.kxf}">Solo ${state.kxf==='in'?'entradas':'salidas'} · Quitar filtro</button>`:''}</div><div class="card-b" style="padding-top:8px"><div class="tbl-wrap"><table>
     <thead><tr><th>Fecha</th><th>Documento</th><th>Tipo</th><th>Detalle</th><th>Lote</th><th class="r">Entrada</th><th class="r">Salida</th><th class="r">Saldo</th><th class="r">Valor saldo</th><th>Usuario</th></tr></thead><tbody>
-    ${[...rows].reverse().map(r=>`<tr><td style="white-space:nowrap">${fd(r.t)} <span class="muted">${ft(r.t)}</span></td><td class="mono">${esc(r.ref)}</td>
+    ${[...rows].filter(r=>!state.kxf||(state.kxf==='in'?r.d>0:r.d<0)).reverse().map(r=>`<tr><td style="white-space:nowrap">${fd(r.t)} <span class="muted">${ft(r.t)}</span></td><td class="mono">${esc(r.ref)}</td>
     <td><span class="tag ${r.d>0?'t-ok':r.tipo==='Salida'?'t-info':'t-warn'}">${r.tipo}</span></td><td>${esc(r.detalle||'')}</td><td class="mono">${esc(r.lote)}</td>
     <td class="r pos">${r.d>0?'+'+num(r.d):''}</td><td class="r neg">${r.d<0?num(r.d):''}</td><td class="r"><b>${num(r.saldo)}</b></td><td class="r muted">${money(r.saldo*p.costo)}</td><td class="muted">${esc(r.user)}</td></tr>`).join('')}
     </tbody></table></div></div></div>`;
@@ -695,6 +702,18 @@ const VIEWS={dashboard,inventario,kardex,hojas,reportes,alertas};
 
 /* ============ modales y utilidades UI ============ */
 function openModal(html,wide){$('#modal').className='modal'+(wide?' wide':'');$('#modal').innerHTML=html;$('#modalRoot').classList.add('open')}
+function upsell(){
+  openModal(`${mh('Reportes de consumo · Versión Premium')}<div class="m-b">
+   <div class="note">Este módulo está incluido en la <b>versión Premium</b>. Para verlo, cierre sesión e ingrese con el acceso demo002.</div>
+   <div class="lg" style="gap:12px;font-size:14px">
+    <div><i class="dotc" style="background:var(--brand)"></i>Consumo por área: hojas, unidades y valor</div>
+    <div><i class="dotc" style="background:var(--brand)"></i>Productos más despachados por período</div>
+    <div><i class="dotc" style="background:var(--brand)"></i>Pacientes con mayor consumo</div>
+    <div><i class="dotc" style="background:var(--brand)"></i>Comparativo de 7, 30 y 90 días</div>
+    <div><i class="dotc" style="background:var(--brand)"></i>Exportación del detalle a Excel</div>
+   </div></div>
+   <div class="m-f"><button class="btn" data-act="close">Entendido</button><button class="btn pri" data-act="logout">Cerrar sesión para entrar como Premium</button></div>`);
+}
 let pendingYes=null;
 function ask(title,msg,label,fn){pendingYes=fn;openModal(`${mh(title)}<div class="m-b"><p style="margin:0">${msg}</p></div><div class="m-f"><button class="btn" data-act="close">Cancelar</button><button class="btn pri" data-act="askYes">${label}</button></div>`)}
 function closeModal(){$('#modalRoot').classList.remove('open');state.draft=null}
@@ -774,11 +793,13 @@ function viewSheet(s){
 
 /* ============ acciones ============ */
 const A={
- go(d){state.view=d.v;render(true)},
+ go(d){if(d.v==='reportes'&&PLAN!=='premium'){upsell();return}state.view=d.v;render(true)},
  close(){closeModal()},
  reset(){ask('Restablecer datos de ejemplo','Se perderán los cambios hechos en esta demo y se cargarán de nuevo los datos de ejemplo.','Restablecer',()=>{try{localStorage.removeItem(KEY)}catch(e){}seed();save();render();toast('Datos de ejemplo restablecidos')})},
  askYes(){const f=pendingYes;pendingYes=null;closeModal();f&&f()},
- kardexOf(d){state.kx=+d.id;state.view='kardex';render(true)},
+ kardexOf(d){state.kx=+d.id;state.kxf='';state.view='kardex';render(true)},
+ kxFilter(d){state.kxf=state.kxf===d.f?'':d.f;render();const e=document.getElementById('kxmoves');if(e)e.scrollIntoView({behavior:'smooth',block:'start'})},
+ kxGo(d){const e=document.getElementById(d.t);if(e)e.scrollIntoView({behavior:'smooth',block:'start'})},
  tab(d){state.tab=d.k;render()},
  tabGo(d){state.tab=d.k;state.view='hojas';render(true)},
  invFilter(d){state.inv={q:'',cat:d.cat||'',est:d.est||''};state.view='inventario';render(true)},
@@ -859,7 +880,7 @@ const I={
  invcat(el){state.inv.cat=el.value;$('#invbody').innerHTML=invRows()},
  invest(el){state.inv.est=el.value;$('#invbody').innerHTML=invRows()},
  hq(el){state.hq=el.value;const pos=el.selectionStart;render();const n=$('#hq');n.focus();n.setSelectionRange(pos,pos)},
- kx(el){state.kx=+el.value;render()},
+ kx(el){state.kx=+el.value;state.kxf='';render()},
  rep(el){state.rep=+el.value;render()}
 };
 document.addEventListener('click',e=>{
@@ -876,13 +897,16 @@ const BRAND={name:'FarmaControl',tagline:'Gestión de farmacia'};
 $('#brandName').textContent=BRAND.name;$('#brandTag').textContent=BRAND.tagline;document.title=BRAND.name+' · Demo';
 document.querySelectorAll('.bn').forEach(e=>e.textContent=BRAND.name);document.querySelectorAll('.bt').forEach(e=>e.textContent=BRAND.tagline);
 /* ============ acceso (demo) ============ */
-const SKEY='farmacontrol-demo-session', DEMO_USER='demo001', DEMO_PASS='demo001';
-const logged=()=>{try{return sessionStorage.getItem(SKEY)==='1'}catch(e){return false}};
+const SKEY='farmacontrol-demo-session', USERS={demo001:'estandar',demo002:'premium'};
+const sessionPlan=()=>{try{const v=sessionStorage.getItem(SKEY);return v==='premium'||v==='estandar'?v:(v==='1'?'estandar':null)}catch(e){return null}};
+let PLAN=sessionPlan()||'estandar';
+const logged=()=>!!sessionPlan();
 function setLocked(l){document.body.classList.toggle('locked',l);if(l){$('#lgPass').value='';setTimeout(()=>$('#lgUser').focus(),50)}}
 $('#loginForm').addEventListener('submit',e=>{
   e.preventDefault();
-  if($('#lgUser').value.trim().toLowerCase()===DEMO_USER&&$('#lgPass').value===DEMO_PASS){
-    try{sessionStorage.setItem(SKEY,'1')}catch(x){}
+  const uname=$('#lgUser').value.trim().toLowerCase();
+  if(USERS[uname]&&$('#lgPass').value===uname){
+    PLAN=USERS[uname];try{sessionStorage.setItem(SKEY,PLAN)}catch(x){}
     $('#lgErr').style.display='none';setLocked(false);state.view='dashboard';render(true);toast('Bienvenido, Q.F. Usuario Demo');
   }else{$('#lgErr').style.display='block'}
 });
